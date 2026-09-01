@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ZARKER 재고관리">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<title>ZARKER 재고관리 웹앱</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--line:#dbe3ef;--text:#0f172a;--muted:#64748b;--blue:#2563eb;--green:#0f8a45;--red:#dc2626;--head:#f1f5f9;--soft:#f8fafc;--yellow:#fff7ed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,'Noto Sans KR',sans-serif;color:var(--text)}
+.wrap{max-width:1360px;margin:0 auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap}
+h1{font-size:24px;margin:0 0 6px}.sub{color:var(--muted);font-size:13px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 6px 18px rgba(15,23,42,.05)}
+h2{font-size:18px;margin:0 0 12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:10px;background:var(--blue);color:white;padding:9px 12px;font-weight:700;cursor:pointer}.btn.gray{background:#475569}.btn.red{background:var(--red)}.btn.green{background:var(--green)}.btn.small{padding:5px 8px;border-radius:8px;font-size:12px}.btn.light{background:#e2e8f0;color:#0f172a}
+select,input{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:white;min-height:36px}select{font-weight:700}.short{width:90px}.name{width:150px}.date{width:120px}.wide{width:220px}.num{text-align:right}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;overflow:hidden;border:1px solid var(--line);border-radius:12px}th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px;text-align:center;vertical-align:middle}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{background:var(--head);font-weight:800}tfoot td{background:#f8fafc;font-weight:800}.left{text-align:left}.right{text-align:right}.muted{color:var(--muted)}.ok{color:var(--green);font-weight:800}.warn{color:var(--red);font-weight:800}.scroll{overflow:auto}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:12px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.summary{background:linear-gradient(180deg,#fff,#f8fafc);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}.summary .label{font-size:13px;color:var(--muted);font-weight:700}.summary .value{font-size:26px;font-weight:900;margin-top:8px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800}.tab.active{background:#1d4ed8;color:#fff;border-color:#1d4ed8}.sectionNote{background:var(--yellow);border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px;font-size:13px;margin:10px 0}.hidden{display:none}.packTitle{font-weight:900;font-size:15px;margin:18px 0 8px}.twoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.productBox{min-width:260px}.printOnly{display:none}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.twoCols{grid-template-columns:1fr}.top{display:block}.row{margin-top:10px}}
+@media print{body{background:white}.wrap{max-width:none;padding:0}.noPrint{display:none!important}.card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}.printOnly{display:block}.scroll{overflow:visible}table{font-size:11px}th,td{padding:5px}.grid{grid-template-columns:repeat(5,1fr)}}
+
+/* Mobile app enhancements */
+html,body{min-height:100%;-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior-y:contain}
+.wrap{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:20;background:rgba(245,247,251,.96);backdrop-filter:blur(10px);padding-top:env(safe-area-inset-top);border-bottom:1px solid rgba(219,227,239,.8)}
+.btn,select,input{font-size:16px}
+.btn{min-height:42px}
+@media(max-width:700px){
+ .wrap{padding:8px 8px calc(72px + env(safe-area-inset-bottom))}
+ .top{margin:0 -8px 10px;padding:8px 10px 10px}
+ h1{font-size:20px}.sub{font-size:12px;line-height:1.45}
+ .row.noPrint{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+ .row.noPrint .btn,.row.noPrint label.btn{width:100%;text-align:center}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .summary{padding:11px 8px}.summary .label{font-size:11px}.summary .value{font-size:20px}
+ .card{border-radius:13px;padding:12px;margin:10px 0}
+ h2{font-size:16px}
+ table{font-size:12px;min-width:650px}
+ th,td{padding:7px 6px}
+ .scroll{-webkit-overflow-scrolling:touch}
+ .productBox{min-width:100%;width:100%}
+ .card.noPrint .row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+ .card.noPrint .row select{grid-column:1/-1}
+ .card.noPrint .row .muted{grid-column:1/-1}
+ input.short{width:76px} input.name{width:120px} input.date{width:108px}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>ZARKER 재고관리 웹앱</h1>
+      <div class="sub">제품 선택 후 재고 · 발주 · 작업계획 · 번호별 배분을 관리합니다. (FBA/AWD 현재고 통합 버전)</div>
+    </div>
+    <div class="row noPrint">
+      <button class="btn green" onclick="saveAll()">저장</button>
+      <button class="btn light" onclick="loadFromGoogle()">최신 데이터 불러오기</button>
+      <button class="btn gray" onclick="saveShareHtml()">공유용 HTML 저장</button>
+      <button class="btn gray" onclick="saveReportHtml()">아이폰용 보고서 저장</button>
+      <button class="btn light" onclick="backup()">백업 저장</button>
+      <label class="btn light" style="display:inline-block">백업 불러오기<input type="file" accept=".json" style="display:none" onchange="restore(event)"></label>
+      <button class="btn red" onclick="resetDefault()">기본값 복구</button>
+      <button class="btn gray" onclick="window.print()">출력/PDF 저장</button>
+      <span id="syncStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card noPrint">
+    <h2>제품 선택</h2>
+    <div class="row">
+      <select id="productSelect" class="productBox" onchange="selectProduct(this.value)"></select>
+      <button class="btn" onclick="addProduct()">+ 제품 추가</button>
+      <button class="btn light" onclick="renameProduct()">제품명 수정</button>
+      <button class="btn red" onclick="deleteProduct()">제품 삭제</button>
+      <span class="muted">일반키는 번호별 배분 대신 미국/국내 재고와 발송 계획 중심으로 표시됩니다.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="currentTitle">요약</h2>
+    <div class="grid" id="summaryGrid"></div>
+  </div>
+
+  <div id="keyedArea"></div>
+  <div id="normalArea"></div>
+</div>
+
+<script>
+
+const GOOGLE_SCRIPT_URL='https://script.google.com/macros/s/AKfycbxcJJVeNWWE-Yo3Bp8MGr17ielfAqgCwHQcAeLmUXdA8kPpGcye_Rc_S2VcgLU7W4ULsw/exec';
+const NUM_KEYS=['1번','4번','7번','8번','9번','10번','11번'];
+const defaultState={
+ selected:'J45S 동일키',
+ products:{
+  'J45S 동일키':{type:'keyed',keys:['1번','4번','7번','8번','9번','10번','11번'],stock:{'1번':2000,'4번':2000,'7번':1000,'8번':1000,'9번':2000,'10번':2000,'11번':2000},
+    plans:[{sku:'2PACK',boxes:45,packsPerBox:36,pcsPerPack:2,monthly:275},{sku:'6PACK',boxes:55,packsPerBox:10,pcsPerPack:6,monthly:78},{sku:'4PACK',boxes:15,packsPerBox:18,pcsPerPack:4,monthly:38},{sku:'12PACK',boxes:42,packsPerBox:5,pcsPerPack:12,monthly:25},{sku:'24PACK',boxes:5,packsPerBox:3,pcsPerPack:24,monthly:4},{sku:'60PACK',boxes:12,packsPerBox:1,pcsPerPack:60,monthly:5}],
+    orders:[{name:'1차 발주',date:'2026-05-19',qty:{'1번':2000,'4번':2000,'7번':1000,'8번':1000,'9번':2000,'10번':2000,'11번':2000}},{name:'2차 발주',date:'2026-06',qty:{'1번':2000,'4번':2000,'7번':2000,'8번':2000,'9번':2000,'10번':2000,'11번':2000}}]
+  },
+  'J55S 동일키':{type:'keyed',keys:['1번','2번'],stock:{'1번':0,'2번':0},
+    plans:[{sku:'2PACK',boxes:0,packsPerBox:26,pcsPerPack:2,monthly:0},{sku:'4PACK',boxes:0,packsPerBox:13,pcsPerPack:4,monthly:0},{sku:'6PACK',boxes:0,packsPerBox:8,pcsPerPack:6,monthly:0},{sku:'12PACK',boxes:0,packsPerBox:4,pcsPerPack:12,monthly:0}],orders:[]},
+  'J45S 일반키':{type:'normal',boxPcs:72,usStock:3000,koreaStock:3728,inTransit:0,plannedShip:0,monthly:360,orders:[]},
+  'J55S 일반키':{type:'normal',boxPcs:48,usStock:0,koreaStock:0,inTransit:0,plannedShip:0,monthly:0,orders:[]}
+ }
+};
+const injected=window.__SHARED_STATE__||null;
+let state=load();
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function num(v){let n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?0:n}
+function fmt(n){return Math.round(num(n)).toLocaleString('ko-KR')}
+function load(){try{if(injected){localStorage.setItem('zarkerInvV1',JSON.stringify(injected));return clone(injected)}return JSON.parse(localStorage.getItem('zarkerInvV1'))||clone(defaultState)}catch(e){return clone(defaultState)}}
+function autoSave(){localStorage.setItem('zarkerInvV1',JSON.stringify(state))}
+function saveAll(){autoSave();saveToGoogle(false)}
+function resetDefault(){if(confirm('기본값으로 복구할까요?')){state=clone(defaultState);autoSave();renderAll()}}
+function cur(){return state.products[state.selected]}
+function productNames(){return Object.keys(state.products)}
+function selectProduct(name){state.selected=name;autoSave();renderAll()}
+function addProduct(){let name=prompt('제품명을 입력하세요. 예: B30 동일키');if(!name)return;if(state.products[name])return alert('이미 있는 제품입니다.');let type=confirm('동일키 제품인가요?\n확인=동일키 / 취소=일반키')?'keyed':'normal';if(type==='keyed'){state.products[name]={type:'keyed',keys:['1번'],stock:{'1번':0},plans:[{sku:'2PACK',boxes:0,packsPerBox:1,pcsPerPack:2,monthly:0}],orders:[]}}else{state.products[name]={type:'normal',boxPcs:1,usStock:0,koreaStock:0,inTransit:0,plannedShip:0,monthly:0,orders:[]}}state.selected=name;autoSave();renderAll()}
+function renameProduct(){let old=state.selected;let name=prompt('새 제품명',old);if(!name||name===old)return;if(state.products[name])return alert('이미 있는 제품명입니다.');state.products[name]=state.products[old];delete state.products[old];state.selected=name;autoSave();renderAll()}
+function deleteProduct(){if(productNames().length<=1)return alert('제품은 최소 1개 필요합니다.');if(!confirm(state.selected+' 제품을 삭제할까요?'))return;delete state.products[state.selected];state.selected=productNames()[0];autoSave();renderAll()}
+function totalsKeyed(p){let current=p.keys.reduce((s,k)=>s+num(p.stock[k]),0);let need=p.plans.reduce((s,x)=>s+num(x.boxes)*num(x.packsPerBox)*num(x.pcsPerPack),0);let amazon=p.plans.reduce((s,x)=>s+num(x.boxes)*num(x.packsPerBox),0);let orders=(p.orders||[]).reduce((s,o)=>s+p.keys.reduce((a,k)=>a+num(o.qty[k]),0),0);return{current,need,remain:current-need,amazon,orders}}
+function totalsNormal(p){let current=num(p.usStock)+num(p.inTransit)+num(p.plannedShip)+num(p.koreaStock);let amazon=num(p.usStock)+num(p.inTransit)+num(p.plannedShip);let ship=num(p.plannedShip);let boxes=p.boxPcs?Math.floor(ship/num(p.boxPcs)):0;let months=p.monthly?amazon/num(p.monthly):0;return{current,amazon,korea:num(p.koreaStock),ship,boxes,monthly:num(p.monthly),months}}
+function renderProductSelect(){let sel=document.getElementById('productSelect');sel.innerHTML=productNames().map(n=>`<option ${n===state.selected?'selected':''}>${n}</option>`).join('')}
+function renderSummary(){document.getElementById('currentTitle').textContent=state.selected+' 요약';let p=cur();let h='';if(p.type==='keyed'){let t=totalsKeyed(p);let cards=[['현재재고',t.current,'개'],['작업필요수량',t.need,'개'],['작업후잔량',t.remain,'개'],['아마존입고수량',t.amazon,'개'],['누적발주',t.orders,'개']];h=cards.map(c=>`<div class="summary"><div class="label">${c[0]}</div><div class="value ${c[1]<0?'warn':''}">${fmt(c[1])}${c[2]}</div></div>`).join('')}else{let t=totalsNormal(p);let cards=[['총 가용재고',t.current,'개'],['아마존 가용재고',t.amazon,'개'],['국내재고',t.korea,'개'],['발송예정',t.ship,'개'],['재고개월',t.months? t.months.toFixed(1):'-','개월']];h=cards.map(c=>`<div class="summary"><div class="label">${c[0]}</div><div class="value">${typeof c[1]==='number'?fmt(c[1]):c[1]}${c[2]}</div></div>`).join('')}document.getElementById('summaryGrid').innerHTML=h}
+function renderKeyed(){let p=cur();let area=document.getElementById('keyedArea');let normal=document.getElementById('normalArea');if(p.type!=='keyed'){area.innerHTML='';return}normal.innerHTML='';area.innerHTML=`
+<div class="card"><h2>1. 번호별 현재 재고</h2><div class="row noPrint"><button class="btn" onclick="addKey()">+ 번호 추가</button></div><div class="scroll"><table id="stockTable"></table></div></div>
+<div class="card"><h2>2. 발주 이력</h2><div class="row noPrint"><button class="btn" onclick="addOrder()">+ 발주 추가</button></div><div class="scroll"><table id="orderTable"></table></div></div>
+<div class="card"><h2>3. 작업 계획</h2><div class="row noPrint"><button class="btn" onclick="addPlan()">+ 품목 추가</button></div><div class="scroll"><table id="planTable"></table></div></div>
+<div class="card"><h2>4. 번호별 작업 배분 결과</h2><div class="sectionNote">현재 재고 비율을 기준으로 자동 배분합니다. 작업자는 아래 품목별 상세표의 번호별 팩수/낱개 수량을 보고 작업하면 됩니다.</div><div class="scroll"><table id="allocationSummary"></table></div><div id="allocationDetail"></div></div>
+<div class="card"><h2>5. FBA/AWD 현재고 + 입고예정 / 재고개월</h2><div class="sectionNote">FBA/AWD 현재고는 직접 입력합니다. 총재고 = FBA/AWD 현재고 + 아마존 입고수량(입고예정)으로 자동 계산됩니다.</div><div class="scroll"><table id="salesTable"></table></div></div>`;renderStock();renderOrders();renderPlans();renderAllocation();renderSales()}
+function renderNormal(){let p=cur();let normal=document.getElementById('normalArea');if(p.type!=='normal'){normal.innerHTML='';return}document.getElementById('keyedArea').innerHTML='';let t=totalsNormal(p);normal.innerHTML=`
+<div class="card"><h2>1. 일반키 재고 입력</h2><div class="scroll"><table><thead><tr><th>항목</th><th>수량</th><th>비고</th></tr></thead><tbody>
+<tr><td>1박스 수량</td><td><input class="short num" value="${p.boxPcs}" onchange="cur().boxPcs=num(this.value);autoSave();renderAll()"></td><td>J45S 일반키 72개 / J55S 일반키 48개</td></tr>
+<tr><td>미국 현재고</td><td><input class="short num" value="${p.usStock}" onchange="cur().usStock=num(this.value);autoSave();renderAll()"></td><td>아마존 현재 판매 가능 재고</td></tr>
+<tr><td>발송중 재고</td><td><input class="short num" value="${p.inTransit}" onchange="cur().inTransit=num(this.value);autoSave();renderAll()"></td><td>미국 이동중 또는 AWD/FBA 입고 대기</td></tr>
+<tr><td>발송예정 재고</td><td><input class="short num" value="${p.plannedShip}" onchange="cur().plannedShip=num(this.value);autoSave();renderAll()"></td><td>국내에서 미국으로 보낼 예정 수량</td></tr>
+<tr><td>국내창고 재고</td><td><input class="short num" value="${p.koreaStock}" onchange="cur().koreaStock=num(this.value);autoSave();renderAll()"></td><td>발송예정 제외 후 국내 보관 수량</td></tr>
+<tr><td>월 판매량</td><td><input class="short num" value="${p.monthly}" onchange="cur().monthly=num(this.value);autoSave();renderAll()"></td><td>최근 월 판매량 기준</td></tr>
+</tbody><tfoot><tr><td>총 가용재고</td><td>${fmt(t.current)}</td><td>미국+발송중+발송예정+국내</td></tr></tfoot></table></div></div>
+<div class="card"><h2>2. 일반키 재고개월 계산</h2><div class="scroll"><table><thead><tr><th>구분</th><th>수량</th></tr></thead><tbody>
+<tr><td>아마존 가용재고</td><td>${fmt(t.amazon)}개</td></tr>
+<tr><td>월 판매량</td><td>${fmt(t.monthly)}개</td></tr>
+<tr><td>예상 재고개월</td><td>${t.months?t.months.toFixed(1):'-'}개월</td></tr>
+<tr><td>발송예정 박스수</td><td>${fmt(t.boxes)}박스</td></tr>
+</tbody></table></div></div>`}
+function addKey(){let p=cur();let k=prompt('추가할 번호를 입력하세요. 예: 12번');if(!k)return;if(p.keys.includes(k))return alert('이미 있는 번호입니다.');p.keys.push(k);p.stock[k]=0;(p.orders||[]).forEach(o=>o.qty[k]=0);autoSave();renderAll()}
+function delKey(k){let p=cur();if(!confirm(k+' 삭제할까요?'))return;p.keys=p.keys.filter(x=>x!==k);delete p.stock[k];(p.orders||[]).forEach(o=>delete o.qty[k]);autoSave();renderAll()}
+function addPlan(){cur().plans.push({sku:'NEW PACK',boxes:0,packsPerBox:1,pcsPerPack:1,monthly:0});autoSave();renderAll()}
+function delPlan(i){cur().plans.splice(i,1);autoSave();renderAll()}
+function addOrder(){let p=cur();let q={};p.keys.forEach(k=>q[k]=0);p.orders.push({name:(p.orders.length+1)+'차 발주',date:'',qty:q});autoSave();renderAll()}
+function delOrder(i){cur().orders.splice(i,1);autoSave();renderAll()}
+function renderStock(){let p=cur();let h='<thead><tr><th>번호</th><th>현재 재고</th><th class="noPrint">관리</th></tr></thead><tbody>';p.keys.forEach(k=>{h+=`<tr><td>${k}</td><td><input class="short num" value="${p.stock[k]||0}" onchange="cur().stock['${k}']=num(this.value);autoSave();renderAll()"></td><td class="noPrint"><button class="btn red small" onclick="delKey('${k}')">삭제</button></td></tr>`});h+=`</tbody><tfoot><tr><td>합계</td><td>${fmt(p.keys.reduce((s,k)=>s+num(p.stock[k]),0))}</td><td class="noPrint"></td></tr></tfoot>`;document.getElementById('stockTable').innerHTML=h}
+function renderOrders(){let p=cur();let h='<thead><tr><th>발주명</th><th>발주일</th>'+p.keys.map(k=>`<th>${k}</th>`).join('')+'<th>합계</th><th class="noPrint">관리</th></tr></thead><tbody>';(p.orders||[]).forEach((o,i)=>{let sum=p.keys.reduce((s,k)=>s+num(o.qty[k]),0);h+=`<tr><td><input class="name" value="${o.name}" onchange="cur().orders[${i}].name=this.value;autoSave();renderAll()"></td><td><input class="date" value="${o.date}" onchange="cur().orders[${i}].date=this.value;autoSave();renderAll()"></td>`;p.keys.forEach(k=>{h+=`<td><input class="short num" value="${o.qty[k]||0}" onchange="cur().orders[${i}].qty['${k}']=num(this.value);autoSave();renderAll()"></td>`});h+=`<td>${fmt(sum)}</td><td class="noPrint"><button class="btn red small" onclick="delOrder(${i})">삭제</button></td></tr>`});h+='</tbody><tfoot><tr><td colspan="2">누적 발주</td>';p.keys.forEach(k=>{let s=(p.orders||[]).reduce((a,o)=>a+num(o.qty[k]),0);h+=`<td>${fmt(s)}</td>`});h+=`<td>${fmt(totalsKeyed(p).orders)}</td><td class="noPrint"></td></tr></tfoot>`;document.getElementById('orderTable').innerHTML=h}
+function renderPlans(){let p=cur();let h='<thead><tr><th>품목</th><th>박스수</th><th>박스당 팩수</th><th>1팩 낱개</th><th>필요 낱개</th><th>아마존 입고수량</th><th class="noPrint">관리</th></tr></thead><tbody>';p.plans.forEach((x,i)=>{let need=num(x.boxes)*num(x.packsPerBox)*num(x.pcsPerPack), amazon=num(x.boxes)*num(x.packsPerBox);h+=`<tr><td><input class="name" value="${x.sku}" onchange="cur().plans[${i}].sku=this.value;autoSave();renderAll()"></td><td><input class="short num" value="${x.boxes}" onchange="cur().plans[${i}].boxes=num(this.value);autoSave();renderAll()"></td><td><input class="short num" value="${x.packsPerBox}" onchange="cur().plans[${i}].packsPerBox=num(this.value);autoSave();renderAll()"></td><td><input class="short num" value="${x.pcsPerPack}" onchange="cur().plans[${i}].pcsPerPack=num(this.value);autoSave();renderAll()"></td><td>${fmt(need)}</td><td>${fmt(amazon)}</td><td class="noPrint"><button class="btn red small" onclick="delPlan(${i})">삭제</button></td></tr>`});let t=totalsKeyed(p);h+=`</tbody><tfoot><tr><td>합계</td><td></td><td></td><td></td><td>${fmt(t.need)}</td><td>${fmt(t.amazon)}</td><td class="noPrint"></td></tr></tfoot>`;document.getElementById('planTable').innerHTML=h}
+function renderSales(){
+ let p=cur();
+ let h='<thead><tr><th>품목</th><th>FBA/AWD 현재고</th><th>아마존 입고수량<br><span class="muted">(입고예정)</span></th><th>총재고</th><th>월 판매량</th><th>예상 재고개월</th></tr></thead><tbody>';
+ p.plans.forEach((x,i)=>{
+   if(x.amazonStock===undefined) x.amazonStock=0;
+   let inbound=num(x.boxes)*num(x.packsPerBox);
+   let currentAmazon=num(x.amazonStock);
+   let total=currentAmazon+inbound;
+   let m=num(x.monthly);
+   let months=m?total/m:0;
+   h+=`<tr><td>${x.sku}</td><td><input class="short num" value="${x.amazonStock||0}" onchange="cur().plans[${i}].amazonStock=num(this.value);autoSave();renderAll()"></td><td>${fmt(inbound)}</td><td>${fmt(total)}</td><td><input class="short num" value="${x.monthly||0}" onchange="cur().plans[${i}].monthly=num(this.value);autoSave();renderAll()"></td><td>${m?months.toFixed(1):'-'}</td></tr>`;
+ });
+ h+='</tbody>';
+ document.getElementById('salesTable').innerHTML=h;
+}
+function allocate(){let p=cur();let keys=p.keys, stock={};keys.forEach(k=>stock[k]=num(p.stock[k]));let used={};keys.forEach(k=>used[k]=0);let detail=[];p.plans.forEach(plan=>{let totalPacks=num(plan.boxes)*num(plan.packsPerBox);let pcs=num(plan.pcsPerPack);let row={sku:plan.sku,pcsPerPack:pcs,items:{}};keys.forEach(k=>row.items[k]=0);for(let pack=0;pack<totalPacks;pack++){let best=keys[0];let bestRatio=Infinity;keys.forEach(k=>{let remain=stock[k]-used[k];let ratio=stock[k]?used[k]/stock[k]:999999;if(remain>=pcs && ratio<bestRatio){bestRatio=ratio;best=k}});row.items[best]+=1;used[best]+=pcs}detail.push(row)});return{used,detail}}
+function renderAllocation(){let p=cur();let a=allocate();let h='<thead><tr><th>번호</th><th>보유수량</th><th>총 사용량</th><th>작업 후 잔량</th></tr></thead><tbody>';p.keys.forEach(k=>{let r=num(p.stock[k])-num(a.used[k]);h+=`<tr><td>${k}</td><td>${fmt(p.stock[k])}</td><td>${fmt(a.used[k])}</td><td class="${r<0?'warn':'ok'}">${fmt(r)}</td></tr>`});h+=`</tbody><tfoot><tr><td>합계</td><td>${fmt(totalsKeyed(p).current)}</td><td>${fmt(Object.values(a.used).reduce((s,v)=>s+v,0))}</td><td>${fmt(totalsKeyed(p).current-Object.values(a.used).reduce((s,v)=>s+v,0))}</td></tr></tfoot>`;document.getElementById('allocationSummary').innerHTML=h;let d='';a.detail.forEach(row=>{let sumP=0,sumN=0;d+=`<div class="packTitle">${row.sku} 상세 작업표</div><div class="scroll"><table><thead><tr><th>번호</th><th>팩수</th><th>낱개수량</th></tr></thead><tbody>`;p.keys.forEach(k=>{let packs=row.items[k]||0;let pcs=packs*row.pcsPerPack;sumP+=packs;sumN+=pcs;d+=`<tr><td>${k}</td><td>${fmt(packs)}</td><td>${fmt(pcs)}</td></tr>`});d+=`</tbody><tfoot><tr><td>합계</td><td>${fmt(sumP)}</td><td>${fmt(sumN)}</td></tr></tfoot></table></div>`});document.getElementById('allocationDetail').innerHTML=d}
+function renderAll(){renderProductSelect();renderSummary();renderKeyed();renderNormal()}
+function download(filename, text){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/html;charset=utf-8'}));a.download=filename;document.body.appendChild(a);a.click();a.remove()}
+function saveShareHtml(){autoSave();fetch(location.href).then(r=>r.text()).then(html=>{let data='<script>window.__SHARED_STATE__='+JSON.stringify(state).replace(/</g,'\\u003c')+';<\/script>';html=html.replace('<script>\nconst NUM_KEYS',data+'\n<script>\nconst NUM_KEYS');download('ZARKER_inventory_shared.html',html)}).catch(()=>alert('공유용 저장은 다운로드 파일에서 제한될 수 있습니다. 백업 저장을 이용하세요.'))}
+function saveReportHtml(){let p=cur();let s=document.documentElement.outerHTML;let report='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+state.selected+' 보고서</title><style>body{font-family:Arial,\'Noto Sans KR\',sans-serif;padding:14px;color:#0f172a}table{border-collapse:collapse;width:100%;font-size:12px;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:6px;text-align:center}th{background:#f1f5f9}h1{font-size:22px}.card{margin:14px 0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.box{border:1px solid #cbd5e1;border-radius:10px;padding:10px}.label{color:#64748b;font-size:12px}.value{font-size:22px;font-weight:900}
+/* Mobile app enhancements */
+html,body{min-height:100%;-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior-y:contain}
+.wrap{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:20;background:rgba(245,247,251,.96);backdrop-filter:blur(10px);padding-top:env(safe-area-inset-top);border-bottom:1px solid rgba(219,227,239,.8)}
+.btn,select,input{font-size:16px}
+.btn{min-height:42px}
+@media(max-width:700px){
+ .wrap{padding:8px 8px calc(72px + env(safe-area-inset-bottom))}
+ .top{margin:0 -8px 10px;padding:8px 10px 10px}
+ h1{font-size:20px}.sub{font-size:12px;line-height:1.45}
+ .row.noPrint{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+ .row.noPrint .btn,.row.noPrint label.btn{width:100%;text-align:center}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .summary{padding:11px 8px}.summary .label{font-size:11px}.summary .value{font-size:20px}
+ .card{border-radius:13px;padding:12px;margin:10px 0}
+ h2{font-size:16px}
+ table{font-size:12px;min-width:650px}
+ th,td{padding:7px 6px}
+ .scroll{-webkit-overflow-scrolling:touch}
+ .productBox{min-width:100%;width:100%}
+ .card.noPrint .row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+ .card.noPrint .row select{grid-column:1/-1}
+ .card.noPrint .row .muted{grid-column:1/-1}
+ input.short{width:76px} input.name{width:120px} input.date{width:108px}
+}
+
+</style></head><body><h1>'+state.selected+' 보고서</h1>'+document.querySelector('.card').outerHTML+document.getElementById('keyedArea').innerHTML+document.getElementById('normalArea').innerHTML+'
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+  });
+}
+</script>
+
+</body></html>';download(state.selected+'_보고서.html',report)}
+function backup(){autoSave();let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='zarker_inventory_backup.json';a.click()}
+function restore(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);autoSave();renderAll();alert('복원 완료')}catch(e){alert('복원 실패')}};r.readAsText(f)}
+
+function setSyncStatus(msg){let el=document.getElementById('syncStatus'); if(el) el.textContent=msg||''}
+function saveToGoogle(){
+  autoSave();
+  try{
+    let iframe=document.getElementById('googleSaveFrame');
+    if(!iframe){iframe=document.createElement('iframe');iframe.name='googleSaveFrame';iframe.id='googleSaveFrame';iframe.style.display='none';document.body.appendChild(iframe)}
+    let form=document.createElement('form');
+    form.method='POST';
+    form.action=GOOGLE_SCRIPT_URL;
+    form.target='googleSaveFrame';
+    form.style.display='none';
+    let input=document.createElement('input');
+    input.name='data';
+    input.value=JSON.stringify(state);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    setSyncStatus('저장 완료: '+new Date().toLocaleString('ko-KR'));
+    alert('저장되었습니다. 담당자는 최신 데이터 불러오기/새로고침으로 확인할 수 있습니다.');
+  }catch(e){alert('구글시트 저장 실패: '+e.message)}
+}
+function loadFromGoogle(){
+  window.__zarkerGoogleCallback=function(res){
+    try{
+      if(!res || !res.ok){alert('구글시트 불러오기 실패'); return}
+      if(!res.data){alert('저장된 데이터가 아직 없습니다. 먼저 구글시트 저장을 눌러주세요.'); return}
+      state=res.data;
+      autoSave();
+      renderAll();
+      setSyncStatus('구글시트에서 불러옴: '+new Date().toLocaleString('ko-KR'));
+      alert('구글시트 최신 데이터를 불러왔습니다.');
+    }catch(e){alert('불러오기 처리 실패: '+e.message)}
+  };
+  let old=document.getElementById('googleLoadScript'); if(old) old.remove();
+  let sc=document.createElement('script');
+  sc.id='googleLoadScript';
+  sc.src=GOOGLE_SCRIPT_URL+'?action=load&callback=__zarkerGoogleCallback&t='+(Date.now());
+  sc.onerror=function(){alert('구글시트 연결 실패. Apps Script 배포 URL 또는 권한을 확인해주세요.')};
+  document.body.appendChild(sc);
+}
+
+renderAll();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+  });
+}
+</script>
+
+</body>
+</html>
