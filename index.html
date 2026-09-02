@@ -933,7 +933,7 @@ function exportSavedExcel(){
    [&#x27;ZARKER 중국발주 기록&#x27;],
    [&#x27;기록 제목&#x27;,rec.title],[&#x27;판매 집계 기간&#x27;,(rec.salesStart||&#x27;-&#x27;)+&#x27; ~ &#x27;+(rec.salesEnd||&#x27;-&#x27;)],[&#x27;매출 파일&#x27;,rec.salesFile||&#x27;미적용&#x27;],[&#x27;재고 파일&#x27;,rec.stockFile||&#x27;미적용&#x27;],
    [&#x27;저장 일시&#x27;,rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;],
-   [],[&#x27;구분&#x27;,&#x27;제품/규격&#x27;,&#x27;판매량&#x27;,&#x27;월평균 판매량&#x27;,&#x27;현재고&#x27;,&#x27;예상재고&#x27;,&#x27;여유개월&#x27;,&#x27;발주수량&#x27;,&#x27;비고&#x27;]
+   [],[&#x27;구분&#x27;,&#x27;제품/규격&#x27;,&#x27;판매량&#x27;,&#x27;월평균 판매량&#x27;,&#x27;현재고&#x27;,(rec.forecastMonth||&#x27;-&#x27;)+&#x27; 예상재고&#x27;,(rec.spareMonth||&#x27;-&#x27;)+&#x27; 기준 여유개월수&#x27;,&#x27;발주수량&#x27;,&#x27;비고&#x27;]
  ];
  rec.rows.forEach(r=&gt;{const c=calc(r,rec);data.push([r.group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,Number(r.orderQty)||0,r.note||&#x27;&#x27;])});
  const ws=XLSX.utils.aoa_to_sheet(data);
@@ -957,7 +957,7 @@ function renderRecordView(){
  const rec=state.savedRecords[state.savedCurrent];if(!rec){detail.innerHTML=&#x27;&#x27;;return}
  let rows=&#x27;&#x27;,lastGroup=&#x27;&#x27;;
  rec.rows.forEach(r=&gt;{const c=calc(r,rec),show=r.group!==lastGroup;if(show)lastGroup=r.group;rows+=`&lt;tr&gt;&lt;td class=&quot;group&quot;&gt;${show?r.group+groupProductionBadge(r.group):&#x27;&#x27;}&lt;/td&gt;&lt;td class=&quot;name&quot;&gt;${r.name}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(r.sales)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(c.avg)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;&lt;span class=&quot;stockValue&quot;&gt;${fmt(r.stock)}&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;num ${c.forecast&lt;0?&#x27;neg&#x27;:&#x27;good&#x27;}&quot;&gt;${fmt(c.forecast)}&lt;/td&gt;&lt;td class=&quot;num ${c.spare&lt;0?&#x27;neg&#x27;:&#x27;&#x27;}&quot;&gt;${c.avg?Math.round(c.spare):&#x27;-&#x27;}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(r.orderQty)}&lt;/td&gt;&lt;td&gt;${String(r.note||&#x27;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;).replace(/\n/g,&#x27;&lt;br&gt;&#x27;)}&lt;/td&gt;&lt;/tr&gt;`});
- detail.innerHTML=`&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;${rec.title}&lt;/h2&gt;&lt;div class=&quot;recordMeta&quot;&gt;판매 집계: ${rec.salesStart||&#x27;-&#x27;} ~ ${rec.salesEnd||&#x27;-&#x27;} (${rec.avgMonths||&#x27;-&#x27;}개월) · 매출파일: ${rec.salesFile||&#x27;미적용&#x27;} · 재고파일: ${rec.stockFile||&#x27;미적용&#x27;} · 저장: ${rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card tableWrap recordTableWrap&quot;&gt;&lt;table class=&quot;recordTable&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;구분&lt;/th&gt;&lt;th&gt;제품/규격&lt;/th&gt;&lt;th&gt;판매량&lt;/th&gt;&lt;th&gt;월평균&lt;/th&gt;&lt;th&gt;현재고&lt;/th&gt;&lt;th&gt;예상재고&lt;/th&gt;&lt;th&gt;여유개월&lt;/th&gt;&lt;th&gt;발주수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;${rows}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;`;
+ detail.innerHTML=`&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;${rec.title}&lt;/h2&gt;&lt;div class=&quot;recordMeta&quot;&gt;판매 집계: ${rec.salesStart||&#x27;-&#x27;} ~ ${rec.salesEnd||&#x27;-&#x27;} (${rec.avgMonths||&#x27;-&#x27;}개월) · 예상재고 기준: ${rec.forecastMonth||&#x27;-&#x27;} · 여유개월 기준: ${rec.spareMonth||&#x27;-&#x27;} · 매출파일: ${rec.salesFile||&#x27;미적용&#x27;} · 재고파일: ${rec.stockFile||&#x27;미적용&#x27;} · 저장: ${rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card tableWrap recordTableWrap&quot;&gt;&lt;table class=&quot;recordTable&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;구분&lt;/th&gt;&lt;th&gt;제품/규격&lt;/th&gt;&lt;th&gt;판매량&lt;/th&gt;&lt;th&gt;월평균&lt;/th&gt;&lt;th&gt;현재고&lt;/th&gt;&lt;th&gt;${rec.forecastMonth||&#x27;-&#x27;} 예상재고&lt;/th&gt;&lt;th&gt;${rec.spareMonth||&#x27;-&#x27;} 기준 여유개월수&lt;/th&gt;&lt;th&gt;발주수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;${rows}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;`;
 }
 function setChinaView(mode){
  document.querySelectorAll(&#x27;.orderOnly&#x27;).forEach(el=&gt;el.classList.toggle(&#x27;hidden&#x27;,mode!==&#x27;order&#x27;));
@@ -1207,12 +1207,11 @@ async function startCloud(user){
    if(!ready||applying||!snap.exists())return;
    const cloud=String(snap.data().payload||''),local=localValue(item.key);
    if(cloud===local){lastValues[item.key]=cloud;return}
-   applying=true;if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);lastValues[item.key]=cloud;sessionStorage.setItem('zarker_cloud_message','다른 기기의 최신 데이터를 반영했습니다.');location.reload();
+   applying=true;if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);lastValues[item.key]=cloud;location.reload();
   }));
  });
  if(changed&&!sessionStorage.getItem('zarker_cloud_reloaded')){sessionStorage.setItem('zarker_cloud_reloaded','1');location.reload();return}
  sessionStorage.removeItem('zarker_cloud_reloaded');
- const msg=sessionStorage.getItem('zarker_cloud_message');if(msg){sessionStorage.removeItem('zarker_cloud_message');setTimeout(()=>alert(msg),500)}
 }
 async function stopCloud(){ready=false;unsubs.forEach(f=>f());unsubs=[];account.hidden=true;gate.classList.remove('hidden');status.textContent='';document.getElementById('loginPassword').value=''}
 onAuthStateChanged(auth,user=>{if(user)startCloud(user).catch(e=>{console.error(e);status.className='loginStatus';status.textContent='클라우드 연결에 실패했습니다. 잠시 후 새로고침해 주세요.'});else stopCloud()});
