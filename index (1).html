@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#051e4b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>ZARKER 업무관리</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;color:#051e4b}
+.topline{height:5px;background:linear-gradient(90deg,#41afc8,#1487b4,#1c7096)}
+.topbar{height:58px;background:#051e4b;color:#fff;display:flex;align-items:center;padding:0 18px;gap:26px;box-shadow:0 3px 14px rgba(5,30,75,.18)}
+.logo{width:138px;background:#fff;border-radius:2px;padding:4px 9px;display:flex;align-items:center;justify-content:center}
+.logo img{width:112px;height:auto}
+.topnav{display:flex;height:100%;gap:4px}
+.topnav button{border:0;background:transparent;color:#c6bfb8;font-weight:800;padding:0 22px;border-bottom:3px solid transparent;cursor:pointer}
+.topnav button.active{color:#fff;border-bottom-color:#32b4b4}
+.layout{display:flex;height:calc(100vh - 63px)}
+.sidebar{width:210px;background:#1c7096;color:#fff;padding:20px 14px;display:none;flex:0 0 210px}
+.sidebar.active{display:block}
+.side-title{font-size:20px;font-weight:900;margin:0 0 18px}
+.sidebtn{display:block;width:100%;border:0;background:transparent;color:#d4dae0;text-align:left;padding:13px 14px;border-radius:9px;font-weight:800;cursor:pointer;margin-bottom:6px}
+.sidebtn.active{background:#32b4b4;color:#051e4b}
+.content{flex:1;min-width:0;background:#f3f7fa}
+.frame{display:none;width:100%;height:100%;border:0;background:#f5f7fb}
+.frame.active{display:block}
+.amazonWorkspace{display:none;height:100%;overflow:hidden}.amazonWorkspace.active{display:flex;flex-direction:column}.amazonWorkspace.active #amazonFrame{display:block;width:100%;flex:1;min-height:0;height:auto}.amazonTools{background:#fff;border-bottom:1px solid #d6e6ed;padding:16px 20px}.amazonTools.hidden{display:none}.amazonToolRow{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.amazonField label{display:block;font-size:12px;font-weight:800;color:#667085;margin-bottom:5px}.amazonField input,.amazonField select{height:39px;border:1px solid #b9ced8;border-radius:8px;padding:8px 10px;min-width:150px;color:#051e4b;background:#fff}.amazonField.wide input{min-width:220px}.amazonAction{border:0;border-radius:9px;padding:11px 15px;font-weight:900;cursor:pointer;color:#fff;background:linear-gradient(135deg,#41afc8,#1487b4)}.amazonAction.gray{background:#1c7096}.amazonAction.red{background:#c82121}.amazonAction.light{background:#e7f2f6;color:#1c7096}.amazonAction.activeView{background:#32b4b4;color:#051e4b}.amazonStatus{font-size:12px;color:#667085;margin-top:9px}.amazonViewSwitch{display:flex;gap:8px;align-items:center;margin-top:10px}.amazonReportFrame{width:100%;flex:1;min-height:0;border:0;background:#f5f7fb}.amazonEmpty{padding:12px;border:1px dashed #b9ced8;border-radius:9px;color:#747776}.amazonRecordMeta{font-size:12px;color:#667085}
+@media(max-width:800px){
+ .topbar{height:auto;min-height:92px;display:block;padding:8px 10px}
+ .logo{margin:0 auto 7px;width:120px}.logo img{width:102px}
+ .topnav{height:42px;display:grid;grid-template-columns:repeat(3,1fr)}
+ .topnav button{padding:0 5px;border:0;border-radius:8px}.topnav button.active{background:#2f7cff}
+ .layout{height:calc(100vh - 97px);display:block}
+ .sidebar{width:100%;height:auto;padding:7px;display:none;white-space:nowrap;overflow:auto}
+ .sidebar.active{display:flex;gap:6px}
+ .side-title{display:none}.sidebtn{display:inline-block;width:auto;margin:0;padding:9px 11px}
+ .content{height:calc(100% - 54px)}
+}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+<header class="topbar">
+ <div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALEAAABGCAIAAAAM3OIzAAAQAElEQVR4AexcCVhTVxZOXhaWiAuICqK4rywVBEHFDSuCW9VqrR3r7tQuX+3e6TbttNp22lpbuzDVtk61astYC6IoIELdQBFUVFBABdllDUnYYf7kJjePkCAGCHz5Ht/xcu6555537rn/O3d5fDJN3A8XgeYRYHjcDxeB5hHgMNE8HlyNx+MwwaFANwIcJnQjwtU5THAY0I0AhwndiHB1DhOmx0B3fyKHie4+Q6b3j8OE6WPe3Z/IYaK7z5Dp/eMwYfqYd/cncpjo7jNkev84TJg+5t39iRwmuvsMmd4/c8SE6aNoXk/kMGFe89kRo+Ew0RFRNC8bHCbMaz47YjQcJjoiiuZlg8OEec1nR4yGw0RHRNG8bHQlJu5K5fEFxeYVT3MYjTGY6JBxFymqV0efX3H8LAeLDolnBxrpGkykl1cuO37mekmFrK7+yRPnYnIKO3BInKl2RqALMJEjU6yLjgcgiOuVtXVro+NDMrJJlSu7PAKmxkS+vOqpyHOpZVL2yOX19SF3ctgSju/CCJgUExkVlQvC42iGoMOe5ezw7VTPkOTM3edTqZBjuioCpsPEHalsTVQ8zho6Q53tPGDvrEn2VhbX80u3hJ47fPWOjgJXNXEETISJrEr5uuiEtOZLBobqP6j/f2Z4WwgE4HtYiXlNvI2/xYVdy0KVo66KgCkwcbNMuij8r5SScp1B+jna/zzbp5dYROTy2jow1fUNa/bH/Jny4GyhqKsPPntjW3TyF7FX9NInJ5N3nU+FGsxSOpic8c+IxPePJ34YeQkEBrT/UkZDYxPVAXPketbWqCS22c9PXdkRl7Lnws2L2fehoEOXc0vgCXS2RSVF3dTujRKyirZGJRH56dv57F6ZxVLYhzNwg03wB8LEe+qnHEvN3hqVBE1KsAZPfr5wM/6unvPamdsF/714C73qGxvZj2s73+mYuFpcvjziDM4aOj4hQ/waMNlaKKRyWU094WsbGlf9GoPJI1VDpYhhvj6dgjlABPXSR5FJr4Sel1bXEgsZxRULdx/fcDAOwUVYPz15GQQGtOn3OP/vjmBeiSbKb89c+zg6mW0WU/XOsQvPHzozf1fEvB8iIlKbHZRi0nPhCXSAjL2Jt2CB0LEb2bBD5CGXbxMhygNJGXOCw2EfzsANNsEfCIvl1VAD/RifBgvQpARr8OSFQ2cW7I6YE3z06A2tJ6fS836/nJmcc//krVwAHd2NoM7FxLWScpwzc+VVbM/4PN7S4YOQIdiAgALJE2BATU08TB5eBfCGSCRg5o4ZbKiVyHtbiQEd8MgWz4ScjknPBa+X8F6uPxhbWKl2tY+VhV41COFnXGbeil+i2ai1FmnB3ctSDDVCEgut3MZCnRHvlEi3HD5Hn0U02eUAG2sf535EgiEQpmVZVddw7k7Bk79Ek01YXUNjToXMzdG2SFbt6mBrIVSuyC17PVDSiZjAHmJV5HmU1AmgoYHHnzd80PczvXQAAR1FrTpPgCeEV4EddyJkl+t9xrw60/0fsydQ+mT+pBkjHKnO2P59eqpmKCoth2ZaSJ73c/l8oe/2x3yfmzrexlI9VTeLypFySV+GgbOE5S1yHfJegOc7czzWTRrT38aKSLHWbI1KBtRIlWEFkuFr+4pVWyWiQxenjGKpvFa5UELeV2L58fxJ3z3ut3PpVELwKni5X28rNSjZ1gLHDn53jtKTNd6jB9hYozuosanpo6ikmvoGaFbXNUDytNcoK5EQ+ABvBLGGYkRvw12wZGAPcU+moCqIUzVfsHLEoB+mT4T3VE4ZMh5aJQyyRXKuwW8i4wf0eX/uxLcf9aC00XcszbpChoFcJFCO8T4rVy1zHwboPDNl3CbfcZ8u8FniOpQ8C2WRJk+Ap7TJd+zrsx5503/C10um/G/tnL4SS9KUXyG/nl9GeENlRXUNbZKI1TmDPfzR/Xq/4OeCWVzrPZoQvJo9yon2YjNPeY54w1/pyTdLpx5aN2dQ7x6kNadcBkALGL7X4H4l8hrs2e+USofZ9iStD1sq4/Wwfdqi/3b8FfYeAo+R8wXPjR/2qa+rWICaHhvYXbaUrvYaJaupyymXt2zSK1m2J+pafilpQvimDXcgPPBBGJR2mkkFD7K1tkRJSMAAuoTVlqVy7bxOGNh3eF9trOGbVk/D0Xxwr1wWmqI9Q83UJDBWHsFJS9OtDb/Lq9R7I+i6O9q5OtiCAWGplVYrE88jA+3WTRptLRau9Bi52E2Ldei0nfRPT9v7G9Is1+zsoMDwmhR85iXXEeud7S9GR9bUqHdPaKKEVIzsR6uEWT9pzBv+E94Kv5BZUkEkrZffnL5GdwyTnPu/PMNNr35VXbNFio1F9mzRvkjOlIeTbHjp1be1VqZ9nD6w0t+6rz5tPTFh+OShA6gdylizNiJUaIhhe4KICQVqBMMNEOll38NqknO/wX3UKYQIH6rsLExYsQ4UUkb0qvuoF0cPSgw7nJlXaGGhfS+pr5iY6vpmUwVAvDzT/fE9kVg76NpJ9Vsy2CR+GJlE5A49rXc9Mc1CaOQmixihpZVYnfMhQSIp1pwIkA8YOhVoUxEE5+8W/m1fzOKfTtCDDCZp+6LJqnbdorBSgfsYFd0Nu6akQ1duF1Rq11x2ByQAWoUnhayVjo1UqmMc01mYoN7I+MKd3mOfH+l06sC+XGmltY1+/OL9q1Ltj0hH7By3zHDDe3ajoAxvEnIjkRsqS+TVm0NO043bV0umDLPTZnidXjoTiVnk8XRUmlWzSiuxeOGwcCnn/kuHz9FX30IoaPkUuHr2TgH7fmWJ29CTzy7oZaU9jLCtp+SXrtwbraKTK/cqafX+U3Q7zNYEf69MjvUInlzILtpy+CxeAwhBliLhUDsbMB1CnYUJhq/8r7IqGeF2rzFLHe1OHNiXXSlr4PFFrPzBY/0AEyAiACCenTp+w8HYq3klkDTxEGe8k2AN0qth8amF6u0e9mhBY1s7o0rE2vceFntoLs3A66V3jl2cuP2Qz44/H/0uHMdjeEPUMNlOvSWEb6XEnkPKWklb0aRNitoGyrOZj6OTvLb/AU8Cgo/ujk/D8kFaH3cf1q+HFeHbX3YWJuoaGsoZ4TbP0YsH9o0I+T2vUt7EU76QAtbZjO09ACFXHc+ww3/KcyTGnJBVxFZohf8pIS3kciZRwEnkg7kTCW+oPJme92XcVVwN/Tvm8vbYq7hsMKRJ5PAN8wr3ahu0N4M44GwN8iYKOiXS+PThjnSSIm/m+Ow4nJCl584RHbHMYZUEkUMHyr9NHOni0AdNLQkOEE9wFUFbN/iMfeCQqXJbmM7CRFpt0xduQ9cMso86uD9PWtmk8UVoIE/gTcqrUODaABEJ+uFY+n3tprK+san5vbPGluo30sObRxJULE8iFgUvn0bvG4iwZYnpeffYxfePJ/7rxKX3Ii4mPAh8A3tJsMnH5LFNOfaU9LLSvxwscHE+snFu1Ob5dFOZXSZb9OOJK6q0xzYC3tXBFisdaKfmfiJ42TQ3Rzs0tSTsq1p6Asd6aG7DWnYxQtJZmPjEY1SQg93pg/vyFVXal4vHM5QnpNV1WDKWPzIca2q+tNkOC+8Ew9c/tMamptfC4unF0Ssz3XBW1K/aDimuQE48M+/8lsXIDdTMBycSf0xIo1U249jTmuHzcWQ9sMrfZ0h/0oT3G8ciwrNLvPrsauv86/7u8OTsi48hnVBNfCvZl5hOq+1nOgsTy4c6/hV6+Ka8BrMJoo4ayhNThw0IGjd47YFT9HaBdsHtobOt/g3U1qik2Iw8ornEbSjWHcK3XuJZW+d5fxTk/WGQFxj6NhvqhXyAF7GvxPLLxya/Nsudqu2IvYqZplXK0Ms3XIS8PdtDuWSq2pJyioFvFastgB5t5UGcjYW4h4UIqxKSCu7QqDpWQPYOncqNYzoLEyKBwM13MhsNxD9DeQJb6GV7ojKLm/39FbpgKcHtobW+Qzw255/FXIEOyNba4u+TxyFFY9GhlFZYXl5Vg1YdmjbM4cVprlumu7403Q3MlKHqV1lHjVbpHEOCZEZvD5HPrheo78fQpJeG2NlYCtVHYmS1quZXI+iCzcp9WVWRrAoHS0I4iIJo8oMOpep67d4T1/nYPJGm3ApZqmaLTSTtKTsLEwzDeHp4+Pv76zinFxP4yrBw93GcJ3WUn/QYgcVVR0ir4TeyEGVSxbRt/C1uxjdhs78PpzQnOPytoxeIAp+vxWdljfLKj8hR0u+x4Pk8PkoQX8OAZ5NIIBjYW3vWUOg7ILAexWtobBQw6iAjJYDY1sDjZfDbGer3dei0nWqavjMMFKL5iMq2Bn1KkA/RpE8chRQtvhZRzYdl1O4+bLc26nt6egYEBCiVNf9aYiI05e66A7HSFqc1LJmtAAL2CqTqb5jg8VYhSeBtA7AolSpq8EkaQijIWTjQSfiVNdoLY9pUqtBetgJwsECotr6BfhPBW1uv+RsFBQscZawb6Jr6RmqzTFFDQIzcQKyhBI/Lj9wKuQ7llMvQCipTaN2rYk08liEyNOhg+NQTVNtJnYsJOOfu7j537lwwhHT2E/jMv+5grIw1YUQNZzMsmQKGT6p6S1dHWw+nvt6D+xkir8H2Hk72BaodKy4SUAXhi8CY/s1OemP69fF0socRtNI3D9t7D5VxNA3oqT36MwzfZ0g/CEHYl9hKlNfYcA93yZDACMpxLPsSsdB3SH9YxubXb7iDgFEGHPsMSKCsl9AEGmnfC2ZBOJjAJjRROmk+ekEO8nCyhxDkN8yhj+pCHcL2k9LF9ltp3YKbm1tgYCDRYWPieGo2birxopAmWuKL5VdLptCqIQafuY9uDDqyMdAQhW8MDNsQQBAwb5wzqqBjm4LwnZNtU2lnk9IIWld6jiBNHwR6HVUZP7opcJrmQxqasLPZuWQqhKA/1gVgpiEELXRxhgSeoGR/Z3HuYxO2ITB8YyCei7QHiEAZswgJlPUSmkDYMkMThH0DbEITZdC4QZAQshAKts3zhhCEb6SADpG3vzQFJuClq6trUFAQDqWiOnXCD712d/X+U0h6aGXTlumuny/0ZUsM8bgasrEUIcqGCa0i8hlWwPAlYmW1p6VYJGg2alSxmZeIhRKxCDbJ49CLGEcTFZImTAaEIOCDwaqukkIHEolYiBIGVTJlgXYrkUAiFsEaGKWIxxOoncET9ZLSTxgkyrAGmxKVZSokTXo9IU3tKZtFpz2GHtjXxcUlcLa/qKcyb/+RkrXptzg5a3Uk3XF2wBGR8FzZVREwHSYwQncPz/Eurj9dSF+1L0rRAhCbp4z/YlGbMgRMcdR5ETApJjAMPp9f01DP8Pj0thtCEJaMzxb6gOGoyyPAmN6Dzb5jd62YTm9y4MAb/o9wSwbi0MFkrLkuwARcXTFhxIGnZ2PfBP69AM9353iC4aibRKBrMIHBPzraadcT0/F5qY0fKdCFI9NEoMswgeEtdBmCzwdgOOpWEehKTHSrQHDO0AhwmKChlwzWcgAAAGNJREFU4Bh1BDhMqAPB/aIR4DBBQ8Ex6ghwmFAHwohf5tqFw4S5zqzx4+IwYXzszLUnhwlznVnjx8VhwvjYmWtPDhPmOrPGj4vDhPGxM9eeHCbMdWaNH1d3xoTxo+J6ticC/wcAAP//Df2WRQAAAAZJREFUAwB6zcby5YTNfQAAAABJRU5ErkJggg==" alt="ZARKER"></div>
+ <nav class="topnav">
+  <button class="active" onclick="showMain('work',this)">재고작업</button>
+  <button onclick="showMain('china',this)">중국발주</button>
+  <button onclick="showMain('amazon',this)">아마존 월보고</button>
+ </nav>
+</header>
+
+<div class="layout">
+ <aside id="workSide" class="sidebar active">
+   <div>
+    <div class="side-title">재고작업</div>
+    <button class="sidebtn active" onclick="showWorkSub('manage',this)">재고작업 관리</button>
+    <button class="sidebtn" onclick="showWorkSub('schedule',this)">쿠팡 · 아마존 작업 일정</button>
+   </div>
+ </aside>
+
+ <aside id="chinaSide" class="sidebar">
+   <div>
+    <div class="side-title">중국발주</div>
+    <button class="sidebtn active" onclick="showChinaSub('order',this)">중국발주 건</button>
+    <button class="sidebtn" onclick="showChinaSub('records',this)">중국발주 기록</button>
+   </div>
+ </aside>
+
+ <aside id="amazonSide" class="sidebar">
+   <div>
+    <div class="side-title">아마존 월보고</div>
+    <button class="sidebtn active" onclick="showAmazonSub('write',this)">월보고 작성</button>
+    <button class="sidebtn" onclick="showAmazonSub('records',this)">월보고 기록</button>
+   </div>
+ </aside>
+
+ <main class="content">
+   <iframe id="manageFrame" class="frame active" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot; /&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+&lt;title&gt;재고작업 관리&lt;/title&gt;
+&lt;style&gt;
+:root{--bg:#f3f7fa;--card:#fff;--line:#d4e7ee;--text:#051e4b;--muted:#747776;--blue:#1c7096;--green:#32b4b4;--red:#c82121;--head:#1c7096;--soft:#f0f8fa;--yellow:#fff7ed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,&#x27;Noto Sans KR&#x27;,sans-serif;color:var(--text)}
+.wrap{max-width:1360px;margin:0 auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap}
+h1{font-size:24px;margin:0 0 6px}.sub{color:var(--muted);font-size:13px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 6px 18px rgba(15,23,42,.05)}
+h2{font-size:18px;margin:0 0 12px;color:#1c7096}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:10px;background:linear-gradient(135deg,#41afc8,#1487b4);box-shadow:0 4px 11px rgba(28,112,150,.18);color:white;padding:9px 12px;font-weight:700;cursor:pointer}.btn.gray{background:#747776}.btn.red{background:var(--red)}.btn.green{background:#1c7096}.btn.small{padding:5px 8px;border-radius:8px;font-size:12px}.btn.light{background:#e7f2f6;color:#1c7096}
+select,input{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:white;min-height:36px}select{font-weight:700}.short{width:90px}.name{width:150px}.date{width:120px}.wide{width:220px}.num{text-align:right}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;overflow:hidden;border:1px solid var(--line);border-radius:12px}th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px;text-align:center;vertical-align:middle}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{background:linear-gradient(90deg,#1c7096,#1487b4);color:#fff;font-weight:800}tfoot td{background:#edf5f8;font-weight:800}.left{text-align:left}.right{text-align:right}.muted{color:var(--muted)}.ok{color:#14806f;font-weight:800}.warn{color:var(--red);font-weight:800}.scroll{overflow:auto}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7f6f7;color:#1c7096;font-size:12px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.summary{background:linear-gradient(180deg,#fff,#f0f8fa);border:1px solid var(--line);border-top:3px solid #32b4b4;border-radius:14px;padding:14px;text-align:center}.summary .label{font-size:13px;color:var(--muted);font-weight:700}.summary .value{font-size:26px;font-weight:900;margin-top:8px;color:#1c7096}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800}.tab.active{background:#1c7096;color:#fff;border-color:#1c7096}.sectionNote{background:var(--yellow);border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px;font-size:13px;margin:10px 0}.hidden{display:none}.packTitle{font-weight:900;font-size:15px;margin:18px 0 8px;color:#1c7096}.twoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.productBox{min-width:260px}.printOnly{display:none}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.twoCols{grid-template-columns:1fr}.top{display:block}.row{margin-top:10px}}
+@media print{body{background:white}.wrap{max-width:none;padding:0}.noPrint{display:none!important}.card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}.printOnly{display:block}.scroll{overflow:visible}table{font-size:11px}th,td{padding:5px}.grid{grid-template-columns:repeat(5,1fr)}}
+
+.scheduleForm{display:grid;grid-template-columns:.7fr .72fr .92fr .72fr .52fr .52fr 1.45fr auto;gap:6px;align-items:start;margin:8px 0 10px}
+.scheduleForm input,.scheduleForm select,.scheduleForm textarea{width:100%;min-width:0}
+.scheduleNote{min-height:48px;height:48px;resize:vertical;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:inherit;font-size:13px;line-height:1.35;white-space:pre-wrap}
+.scheduleTableNote{width:100%;min-width:300px;min-height:62px;height:62px;resize:vertical;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:inherit;font-size:13px;line-height:1.35;white-space:pre-wrap}
+.statusSelect{min-width:92px;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-weight:800;background:#fff}
+.statusSelect.done{background:#dcfce7;color:#166534}
+.statusSelect.progress{background:#fef3c7;color:#92400e}
+@media(max-width:1000px){.scheduleForm{grid-template-columns:repeat(2,minmax(0,1fr))}.scheduleForm .btn{grid-column:1/-1}}
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+  &lt;div class=&quot;top&quot;&gt;
+    &lt;div&gt;
+      &lt;h1&gt;재고작업 관리&lt;/h1&gt;
+      &lt;div class=&quot;sub&quot;&gt;동일키/일반키 재고 · 발주 · 작업계획 · 번호별 자동배분과 아마존/쿠팡 작업일정을 관리합니다.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row noPrint&quot;&gt;
+      &lt;button class=&quot;btn green&quot; onclick=&quot;saveAll()&quot;&gt;저장&lt;/button&gt;
+      &lt;button class=&quot;btn light&quot; onclick=&quot;loadFromGoogle()&quot;&gt;최신 데이터 불러오기&lt;/button&gt;
+      &lt;span id=&quot;syncStatus&quot; class=&quot;muted&quot;&gt;&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card noPrint&quot;&gt;
+    &lt;h2&gt;제품 선택&lt;/h2&gt;
+    &lt;div class=&quot;row&quot;&gt;
+      &lt;select id=&quot;productSelect&quot; class=&quot;productBox&quot; onchange=&quot;selectProduct(this.value)&quot;&gt;&lt;/select&gt;
+      &lt;button class=&quot;btn&quot; onclick=&quot;addProduct()&quot;&gt;+ 제품 추가&lt;/button&gt;
+      &lt;button class=&quot;btn light&quot; onclick=&quot;renameProduct()&quot;&gt;제품명 수정&lt;/button&gt;
+      &lt;button class=&quot;btn red&quot; onclick=&quot;deleteProduct()&quot;&gt;제품 삭제&lt;/button&gt;
+      &lt;span class=&quot;muted&quot;&gt;일반키는 번호별 배분 대신 미국/국내 재고와 발송 계획 중심으로 표시됩니다.&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2 id=&quot;currentTitle&quot;&gt;요약&lt;/h2&gt;
+    &lt;div class=&quot;grid&quot; id=&quot;summaryGrid&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  
+&lt;div id=&quot;keyedArea&quot;&gt;&lt;/div&gt;
+  &lt;div id=&quot;normalArea&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+
+const GOOGLE_SCRIPT_URL=&#x27;https://script.google.com/macros/s/AKfycbxcJJVeNWWE-Yo3Bp8MGr17ielfAqgCwHQcAeLmUXdA8kPpGcye_Rc_S2VcgLU7W4ULsw/exec&#x27;;
+const NUM_KEYS=[&#x27;1번&#x27;,&#x27;4번&#x27;,&#x27;7번&#x27;,&#x27;8번&#x27;,&#x27;9번&#x27;,&#x27;10번&#x27;,&#x27;11번&#x27;];
+const defaultState={
+ selected:&#x27;J45S 동일키&#x27;,
+ products:{
+  &#x27;J45S 동일키&#x27;:{type:&#x27;keyed&#x27;,keys:[&#x27;1번&#x27;,&#x27;4번&#x27;,&#x27;7번&#x27;,&#x27;8번&#x27;,&#x27;9번&#x27;,&#x27;10번&#x27;,&#x27;11번&#x27;],stock:{&#x27;1번&#x27;:2000,&#x27;4번&#x27;:2000,&#x27;7번&#x27;:1000,&#x27;8번&#x27;:1000,&#x27;9번&#x27;:2000,&#x27;10번&#x27;:2000,&#x27;11번&#x27;:2000},
+    plans:[{sku:&#x27;2PACK&#x27;,boxes:45,packsPerBox:36,pcsPerPack:2,monthly:275},{sku:&#x27;6PACK&#x27;,boxes:55,packsPerBox:10,pcsPerPack:6,monthly:78},{sku:&#x27;4PACK&#x27;,boxes:15,packsPerBox:18,pcsPerPack:4,monthly:38},{sku:&#x27;12PACK&#x27;,boxes:42,packsPerBox:5,pcsPerPack:12,monthly:25},{sku:&#x27;24PACK&#x27;,boxes:5,packsPerBox:3,pcsPerPack:24,monthly:4},{sku:&#x27;60PACK&#x27;,boxes:12,packsPerBox:1,pcsPerPack:60,monthly:5}],
+    orders:[{name:&#x27;1차 발주&#x27;,date:&#x27;2026-05-19&#x27;,qty:{&#x27;1번&#x27;:2000,&#x27;4번&#x27;:2000,&#x27;7번&#x27;:1000,&#x27;8번&#x27;:1000,&#x27;9번&#x27;:2000,&#x27;10번&#x27;:2000,&#x27;11번&#x27;:2000}},{name:&#x27;2차 발주&#x27;,date:&#x27;2026-06&#x27;,qty:{&#x27;1번&#x27;:2000,&#x27;4번&#x27;:2000,&#x27;7번&#x27;:2000,&#x27;8번&#x27;:2000,&#x27;9번&#x27;:2000,&#x27;10번&#x27;:2000,&#x27;11번&#x27;:2000}}]
+  },
+  &#x27;J55S 동일키&#x27;:{type:&#x27;keyed&#x27;,keys:[&#x27;1번&#x27;,&#x27;2번&#x27;],stock:{&#x27;1번&#x27;:0,&#x27;2번&#x27;:0},
+    plans:[{sku:&#x27;2PACK&#x27;,boxes:0,packsPerBox:26,pcsPerPack:2,monthly:0},{sku:&#x27;4PACK&#x27;,boxes:0,packsPerBox:13,pcsPerPack:4,monthly:0},{sku:&#x27;6PACK&#x27;,boxes:0,packsPerBox:8,pcsPerPack:6,monthly:0},{sku:&#x27;12PACK&#x27;,boxes:0,packsPerBox:4,pcsPerPack:12,monthly:0}],orders:[]},
+  &#x27;J45S 일반키&#x27;:{type:&#x27;normal&#x27;,boxPcs:72,usStock:3000,koreaStock:3728,inTransit:0,plannedShip:0,monthly:360,orders:[]},
+  &#x27;J55S 일반키&#x27;:{type:&#x27;normal&#x27;,boxPcs:48,usStock:0,koreaStock:0,inTransit:0,plannedShip:0,monthly:0,orders:[]}
+ }
+};
+defaultState.workSchedule=[];
+const injected=window.__SHARED_STATE__||null;
+let state=load();
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function num(v){let n=parseFloat(String(v).replace(/,/g,&#x27;&#x27;));return isNaN(n)?0:n}
+function fmt(n){return Math.round(num(n)).toLocaleString(&#x27;ko-KR&#x27;)}
+function load(){try{if(injected){localStorage.setItem(&#x27;zarkerInvV1&#x27;,JSON.stringify(injected));return clone(injected)}return JSON.parse(localStorage.getItem(&#x27;zarkerInvV1&#x27;))||clone(defaultState)}catch(e){return clone(defaultState)}}
+function autoSave(){localStorage.setItem(&#x27;zarkerInvV1&#x27;,JSON.stringify(state))}
+function saveAll(){autoSave();saveToGoogle(false)}
+function resetDefault(){if(confirm(&#x27;기본값으로 복구할까요?&#x27;)){state=clone(defaultState);autoSave();renderAll()}}
+function cur(){return state.products[state.selected]}
+function productNames(){return Object.keys(state.products)}
+function selectProduct(name){state.selected=name;autoSave();renderAll()}
+function addProduct(){let name=prompt(&#x27;제품명을 입력하세요. 예: B30 동일키&#x27;);if(!name)return;if(state.products[name])return alert(&#x27;이미 있는 제품입니다.&#x27;);let type=confirm(&#x27;동일키 제품인가요?\n확인=동일키 / 취소=일반키&#x27;)?&#x27;keyed&#x27;:&#x27;normal&#x27;;if(type===&#x27;keyed&#x27;){state.products[name]={type:&#x27;keyed&#x27;,keys:[&#x27;1번&#x27;],stock:{&#x27;1번&#x27;:0},plans:[{sku:&#x27;2PACK&#x27;,boxes:0,packsPerBox:1,pcsPerPack:2,monthly:0}],orders:[]}}else{state.products[name]={type:&#x27;normal&#x27;,boxPcs:1,usStock:0,koreaStock:0,inTransit:0,plannedShip:0,monthly:0,orders:[]}}state.selected=name;autoSave();renderAll()}
+function renameProduct(){let old=state.selected;let name=prompt(&#x27;새 제품명&#x27;,old);if(!name||name===old)return;if(state.products[name])return alert(&#x27;이미 있는 제품명입니다.&#x27;);state.products[name]=state.products[old];delete state.products[old];state.selected=name;autoSave();renderAll()}
+function deleteProduct(){if(productNames().length&lt;=1)return alert(&#x27;제품은 최소 1개 필요합니다.&#x27;);if(!confirm(state.selected+&#x27; 제품을 삭제할까요?&#x27;))return;delete state.products[state.selected];state.selected=productNames()[0];autoSave();renderAll()}
+function totalsKeyed(p){let current=p.keys.reduce((s,k)=&gt;s+num(p.stock[k]),0);let need=p.plans.reduce((s,x)=&gt;s+num(x.boxes)*num(x.packsPerBox)*num(x.pcsPerPack),0);let amazon=p.plans.reduce((s,x)=&gt;s+num(x.boxes)*num(x.packsPerBox),0);let orders=(p.orders||[]).reduce((s,o)=&gt;s+p.keys.reduce((a,k)=&gt;a+num(o.qty[k]),0),0);return{current,need,remain:current-need,amazon,orders}}
+function totalsNormal(p){let current=num(p.usStock)+num(p.inTransit)+num(p.plannedShip)+num(p.koreaStock);let amazon=num(p.usStock)+num(p.inTransit)+num(p.plannedShip);let ship=num(p.plannedShip);let boxes=p.boxPcs?Math.floor(ship/num(p.boxPcs)):0;let months=p.monthly?amazon/num(p.monthly):0;return{current,amazon,korea:num(p.koreaStock),ship,boxes,monthly:num(p.monthly),months}}
+function renderProductSelect(){let sel=document.getElementById(&#x27;productSelect&#x27;);sel.innerHTML=productNames().map(n=&gt;`&lt;option ${n===state.selected?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${n}&lt;/option&gt;`).join(&#x27;&#x27;)}
+function renderSummary(){document.getElementById(&#x27;currentTitle&#x27;).textContent=state.selected+&#x27; 요약&#x27;;let p=cur();let h=&#x27;&#x27;;if(p.type===&#x27;keyed&#x27;){let t=totalsKeyed(p);let cards=[[&#x27;현재재고&#x27;,t.current,&#x27;개&#x27;],[&#x27;작업필요수량&#x27;,t.need,&#x27;개&#x27;],[&#x27;작업후잔량&#x27;,t.remain,&#x27;개&#x27;],[&#x27;아마존입고수량&#x27;,t.amazon,&#x27;개&#x27;],[&#x27;누적발주&#x27;,t.orders,&#x27;개&#x27;]];h=cards.map(c=&gt;`&lt;div class=&quot;summary&quot;&gt;&lt;div class=&quot;label&quot;&gt;${c[0]}&lt;/div&gt;&lt;div class=&quot;value ${c[1]&lt;0?&#x27;warn&#x27;:&#x27;&#x27;}&quot;&gt;${fmt(c[1])}${c[2]}&lt;/div&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}else{let t=totalsNormal(p);let cards=[[&#x27;총 가용재고&#x27;,t.current,&#x27;개&#x27;],[&#x27;아마존 가용재고&#x27;,t.amazon,&#x27;개&#x27;],[&#x27;국내재고&#x27;,t.korea,&#x27;개&#x27;],[&#x27;발송예정&#x27;,t.ship,&#x27;개&#x27;],[&#x27;재고개월&#x27;,t.months? t.months.toFixed(1):&#x27;-&#x27;,&#x27;개월&#x27;]];h=cards.map(c=&gt;`&lt;div class=&quot;summary&quot;&gt;&lt;div class=&quot;label&quot;&gt;${c[0]}&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;${typeof c[1]===&#x27;number&#x27;?fmt(c[1]):c[1]}${c[2]}&lt;/div&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}document.getElementById(&#x27;summaryGrid&#x27;).innerHTML=h}
+function renderKeyed(){let p=cur();let area=document.getElementById(&#x27;keyedArea&#x27;);let normal=document.getElementById(&#x27;normalArea&#x27;);if(p.type!==&#x27;keyed&#x27;){area.innerHTML=&#x27;&#x27;;return}normal.innerHTML=&#x27;&#x27;;area.innerHTML=`
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;1. 번호별 현재 재고&lt;/h2&gt;&lt;div class=&quot;row noPrint&quot;&gt;&lt;button class=&quot;btn&quot; onclick=&quot;addKey()&quot;&gt;+ 번호 추가&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table id=&quot;stockTable&quot;&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;2. 발주 이력&lt;/h2&gt;&lt;div class=&quot;row noPrint&quot;&gt;&lt;button class=&quot;btn&quot; onclick=&quot;addOrder()&quot;&gt;+ 발주 추가&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table id=&quot;orderTable&quot;&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;3. 작업 계획&lt;/h2&gt;&lt;div class=&quot;row noPrint&quot;&gt;&lt;button class=&quot;btn&quot; onclick=&quot;addPlan()&quot;&gt;+ 품목 추가&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table id=&quot;planTable&quot;&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;4. 번호별 작업 배분 결과&lt;/h2&gt;&lt;div class=&quot;sectionNote&quot;&gt;현재 재고 비율을 기준으로 자동 배분합니다. 작업자는 아래 품목별 상세표의 번호별 팩수/낱개 수량을 보고 작업하면 됩니다.&lt;/div&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table id=&quot;allocationSummary&quot;&gt;&lt;/table&gt;&lt;/div&gt;&lt;div id=&quot;allocationDetail&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+`;renderStock();renderOrders();renderPlans();renderAllocation()}
+function renderNormal(){let p=cur();let normal=document.getElementById(&#x27;normalArea&#x27;);if(p.type!==&#x27;normal&#x27;){normal.innerHTML=&#x27;&#x27;;return}document.getElementById(&#x27;keyedArea&#x27;).innerHTML=&#x27;&#x27;;let t=totalsNormal(p);normal.innerHTML=`
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;1. 일반키 재고 입력&lt;/h2&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;1박스 수량&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.boxPcs}&quot; onchange=&quot;cur().boxPcs=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;J45S 일반키 72개 / J55S 일반키 48개&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;미국 현재고&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.usStock}&quot; onchange=&quot;cur().usStock=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;아마존 현재 판매 가능 재고&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;발송중 재고&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.inTransit}&quot; onchange=&quot;cur().inTransit=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;미국 이동중 또는 AWD/FBA 입고 대기&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;발송예정 재고&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.plannedShip}&quot; onchange=&quot;cur().plannedShip=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;국내에서 미국으로 보낼 예정 수량&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;국내창고 재고&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.koreaStock}&quot; onchange=&quot;cur().koreaStock=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;발송예정 제외 후 국내 보관 수량&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;월 판매량&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.monthly}&quot; onchange=&quot;cur().monthly=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;최근 월 판매량 기준&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td&gt;총 가용재고&lt;/td&gt;&lt;td&gt;${fmt(t.current)}&lt;/td&gt;&lt;td&gt;미국+발송중+발송예정+국내&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;2. 일반키 재고개월 계산&lt;/h2&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;구분&lt;/th&gt;&lt;th&gt;수량&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;아마존 가용재고&lt;/td&gt;&lt;td&gt;${fmt(t.amazon)}개&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;월 판매량&lt;/td&gt;&lt;td&gt;${fmt(t.monthly)}개&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;예상 재고개월&lt;/td&gt;&lt;td&gt;${t.months?t.months.toFixed(1):&#x27;-&#x27;}개월&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;발송예정 박스수&lt;/td&gt;&lt;td&gt;${fmt(t.boxes)}박스&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;`}
+function addKey(){let p=cur();let k=prompt(&#x27;추가할 번호를 입력하세요. 예: 12번&#x27;);if(!k)return;if(p.keys.includes(k))return alert(&#x27;이미 있는 번호입니다.&#x27;);p.keys.push(k);p.stock[k]=0;(p.orders||[]).forEach(o=&gt;o.qty[k]=0);autoSave();renderAll()}
+function delKey(k){let p=cur();if(!confirm(k+&#x27; 삭제할까요?&#x27;))return;p.keys=p.keys.filter(x=&gt;x!==k);delete p.stock[k];(p.orders||[]).forEach(o=&gt;delete o.qty[k]);autoSave();renderAll()}
+function addPlan(){
+  let p=cur();
+  let opts=packOptionsForSelected();
+  let sku=opts[0]||&#x27;2PACK&#x27;;
+  let rule=(PACK_RULES[state.selected]||{})[sku]||{packsPerBox:1,pcsPerPack:1};
+  p.plans.push({sku:sku,boxes:0,packsPerBox:rule.packsPerBox,pcsPerPack:rule.pcsPerPack,monthly:0});
+  autoSave();renderAll();
+}
+function delPlan(i){cur().plans.splice(i,1);autoSave();renderAll()}
+function addOrder(){let p=cur();let q={};p.keys.forEach(k=&gt;q[k]=0);p.orders.push({name:(p.orders.length+1)+&#x27;차 발주&#x27;,date:&#x27;&#x27;,qty:q});autoSave();renderAll()}
+function delOrder(i){cur().orders.splice(i,1);autoSave();renderAll()}
+function renderStock(){let p=cur();let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;번호&lt;/th&gt;&lt;th&gt;현재 재고&lt;/th&gt;&lt;th class=&quot;noPrint&quot;&gt;관리&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;p.keys.forEach(k=&gt;{h+=`&lt;tr&gt;&lt;td&gt;${k}&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${p.stock[k]||0}&quot; onchange=&quot;cur().stock[&#x27;${k}&#x27;]=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td class=&quot;noPrint&quot;&gt;&lt;button class=&quot;btn red small&quot; onclick=&quot;delKey(&#x27;${k}&#x27;)&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;`});h+=`&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td&gt;합계&lt;/td&gt;&lt;td&gt;${fmt(p.keys.reduce((s,k)=&gt;s+num(p.stock[k]),0))}&lt;/td&gt;&lt;td class=&quot;noPrint&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;`;document.getElementById(&#x27;stockTable&#x27;).innerHTML=h}
+function renderOrders(){let p=cur();let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;발주명&lt;/th&gt;&lt;th&gt;발주일&lt;/th&gt;&#x27;+p.keys.map(k=&gt;`&lt;th&gt;${k}&lt;/th&gt;`).join(&#x27;&#x27;)+&#x27;&lt;th&gt;합계&lt;/th&gt;&lt;th class=&quot;noPrint&quot;&gt;관리&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;(p.orders||[]).forEach((o,i)=&gt;{let sum=p.keys.reduce((s,k)=&gt;s+num(o.qty[k]),0);h+=`&lt;tr&gt;&lt;td&gt;&lt;input class=&quot;name&quot; value=&quot;${o.name}&quot; onchange=&quot;cur().orders[${i}].name=this.value;autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;date&quot; value=&quot;${o.date}&quot; onchange=&quot;cur().orders[${i}].date=this.value;autoSave();renderAll()&quot;&gt;&lt;/td&gt;`;p.keys.forEach(k=&gt;{h+=`&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${o.qty[k]||0}&quot; onchange=&quot;cur().orders[${i}].qty[&#x27;${k}&#x27;]=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;`});h+=`&lt;td&gt;${fmt(sum)}&lt;/td&gt;&lt;td class=&quot;noPrint&quot;&gt;&lt;button class=&quot;btn red small&quot; onclick=&quot;delOrder(${i})&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;`});h+=&#x27;&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td colspan=&quot;2&quot;&gt;누적 발주&lt;/td&gt;&#x27;;p.keys.forEach(k=&gt;{let s=(p.orders||[]).reduce((a,o)=&gt;a+num(o.qty[k]),0);h+=`&lt;td&gt;${fmt(s)}&lt;/td&gt;`});h+=`&lt;td&gt;${fmt(totalsKeyed(p).orders)}&lt;/td&gt;&lt;td class=&quot;noPrint&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;`;document.getElementById(&#x27;orderTable&#x27;).innerHTML=h}
+
+const PACK_RULES={
+  &quot;J45 동일키&quot;:{
+    &quot;2PACK&quot;:{packsPerBox:36,pcsPerPack:2},
+    &quot;4PACK&quot;:{packsPerBox:18,pcsPerPack:4},
+    &quot;6PACK&quot;:{packsPerBox:10,pcsPerPack:6},
+    &quot;12PACK&quot;:{packsPerBox:5,pcsPerPack:12},
+    &quot;24PACK&quot;:{packsPerBox:3,pcsPerPack:24},
+    &quot;60PACK&quot;:{packsPerBox:1,pcsPerPack:60}
+  },
+  &quot;J45S 동일키&quot;:{
+    &quot;2PACK&quot;:{packsPerBox:36,pcsPerPack:2},
+    &quot;4PACK&quot;:{packsPerBox:18,pcsPerPack:4},
+    &quot;6PACK&quot;:{packsPerBox:10,pcsPerPack:6},
+    &quot;12PACK&quot;:{packsPerBox:5,pcsPerPack:12},
+    &quot;24PACK&quot;:{packsPerBox:3,pcsPerPack:24},
+    &quot;60PACK&quot;:{packsPerBox:1,pcsPerPack:60}
+  },
+  &quot;J55 동일키&quot;:{
+    &quot;2PACK&quot;:{packsPerBox:26,pcsPerPack:2},
+    &quot;4PACK&quot;:{packsPerBox:13,pcsPerPack:4},
+    &quot;6PACK&quot;:{packsPerBox:8,pcsPerPack:6},
+    &quot;12PACK&quot;:{packsPerBox:4,pcsPerPack:12}
+  },
+  &quot;J55S 동일키&quot;:{
+    &quot;2PACK&quot;:{packsPerBox:26,pcsPerPack:2},
+    &quot;4PACK&quot;:{packsPerBox:13,pcsPerPack:4},
+    &quot;6PACK&quot;:{packsPerBox:8,pcsPerPack:6},
+    &quot;12PACK&quot;:{packsPerBox:4,pcsPerPack:12}
+  }
+};
+
+function packOptionsForSelected(){
+  return Object.keys(PACK_RULES[state.selected]||{});
+}
+
+function normalizePlan(x){
+  const rule=(PACK_RULES[state.selected]||{})[x.sku];
+  if(rule){
+    x.packsPerBox=rule.packsPerBox;
+    x.pcsPerPack=rule.pcsPerPack;
+  }
+  return x;
+}
+
+function changePlanSku(i,sku){
+  let x=cur().plans[i];
+  x.sku=sku;
+  normalizePlan(x);
+  autoSave();renderAll();
+}
+
+function renderPlans(){
+  let p=cur();
+  let opts=packOptionsForSelected();
+  let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;품목&lt;/th&gt;&lt;th&gt;박스수&lt;/th&gt;&lt;th&gt;박스당 팩수&lt;/th&gt;&lt;th&gt;1팩 낱개&lt;/th&gt;&lt;th&gt;필요 낱개&lt;/th&gt;&lt;th&gt;아마존 입고수량&lt;/th&gt;&lt;th&gt;관리&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;
+  let totalUnits=0,totalPacks=0;
+
+  p.plans.forEach((x,i)=&gt;{
+    normalizePlan(x);
+    const rule=(PACK_RULES[state.selected]||{})[x.sku];
+    const totalPacksRow=num(x.boxes)*num(x.packsPerBox);
+    const totalUnitsRow=totalPacksRow*num(x.pcsPerPack);
+    totalPacks+=totalPacksRow;
+    totalUnits+=totalUnitsRow;
+
+    let skuCell;
+    if(opts.length){
+      skuCell=&#x27;&lt;select onchange=&quot;changePlanSku(&#x27;+i+&#x27;,this.value)&quot;&gt;&#x27;+
+        opts.map(s=&gt;&#x27;&lt;option &#x27;+(s===x.sku?&#x27;selected&#x27;:&#x27;&#x27;)+&#x27;&gt;&#x27;+s+&#x27;&lt;/option&gt;&#x27;).join(&#x27;&#x27;)+
+        &#x27;&lt;/select&gt;&#x27;;
+    }else{
+      skuCell=&#x27;&lt;input class=&quot;name&quot; value=&quot;&#x27;+(x.sku||&#x27;&#x27;)+&#x27;&quot; onchange=&quot;cur().plans[&#x27;+i+&#x27;].sku=this.value;autoSave();renderAll()&quot;&gt;&#x27;;
+    }
+
+    h+=`&lt;tr&gt;
+      &lt;td&gt;${skuCell}&lt;/td&gt;
+      &lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${x.boxes||0}&quot; onchange=&quot;cur().plans[${i}].boxes=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;strong&gt;${fmt(x.packsPerBox)}&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;strong&gt;${fmt(x.pcsPerPack)}&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;${fmt(totalUnitsRow)}&lt;/td&gt;
+      &lt;td&gt;${fmt(totalPacksRow)}&lt;/td&gt;
+      &lt;td&gt;&lt;button class=&quot;btn red small&quot; onclick=&quot;cur().plans.splice(${i},1);autoSave();renderAll()&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;
+    &lt;/tr&gt;`;
+  });
+
+  h+=`&lt;tr&gt;&lt;th&gt;합계&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;${fmt(totalUnits)}&lt;/th&gt;&lt;th&gt;${fmt(totalPacks)}&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;`;
+  h+=&#x27;&lt;/tbody&gt;&#x27;;
+  document.getElementById(&#x27;planTable&#x27;).innerHTML=h;
+}
+function renderSales(){let p=cur();let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;품목&lt;/th&gt;&lt;th&gt;아마존 입고수량&lt;/th&gt;&lt;th&gt;월 판매량&lt;/th&gt;&lt;th&gt;예상 재고개월&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;p.plans.forEach((x,i)=&gt;{let amazon=num(x.boxes)*num(x.packsPerBox), m=num(x.monthly), months=m?amazon/m:0;h+=`&lt;tr&gt;&lt;td&gt;${x.sku}&lt;/td&gt;&lt;td&gt;${fmt(amazon)}&lt;/td&gt;&lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${x.monthly||0}&quot; onchange=&quot;cur().plans[${i}].monthly=num(this.value);autoSave();renderAll()&quot;&gt;&lt;/td&gt;&lt;td&gt;${m?months.toFixed(1):&#x27;-&#x27;}&lt;/td&gt;&lt;/tr&gt;`});h+=&#x27;&lt;/tbody&gt;&#x27;;document.getElementById(&#x27;salesTable&#x27;).innerHTML=h}
+function allocate(){let p=cur();let keys=p.keys, stock={};keys.forEach(k=&gt;stock[k]=num(p.stock[k]));let used={};keys.forEach(k=&gt;used[k]=0);let detail=[];p.plans.forEach(plan=&gt;{let totalPacks=num(plan.boxes)*num(plan.packsPerBox);let pcs=num(plan.pcsPerPack);let row={sku:plan.sku,pcsPerPack:pcs,items:{}};keys.forEach(k=&gt;row.items[k]=0);for(let pack=0;pack&lt;totalPacks;pack++){let best=keys[0];let bestRatio=Infinity;keys.forEach(k=&gt;{let remain=stock[k]-used[k];let ratio=stock[k]?used[k]/stock[k]:999999;if(remain&gt;=pcs &amp;&amp; ratio&lt;bestRatio){bestRatio=ratio;best=k}});row.items[best]+=1;used[best]+=pcs}detail.push(row)});return{used,detail}}
+function renderAllocation(){let p=cur();let a=allocate();let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;번호&lt;/th&gt;&lt;th&gt;보유수량&lt;/th&gt;&lt;th&gt;총 사용량&lt;/th&gt;&lt;th&gt;작업 후 잔량&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;p.keys.forEach(k=&gt;{let r=num(p.stock[k])-num(a.used[k]);h+=`&lt;tr&gt;&lt;td&gt;${k}&lt;/td&gt;&lt;td&gt;${fmt(p.stock[k])}&lt;/td&gt;&lt;td&gt;${fmt(a.used[k])}&lt;/td&gt;&lt;td class=&quot;${r&lt;0?&#x27;warn&#x27;:&#x27;ok&#x27;}&quot;&gt;${fmt(r)}&lt;/td&gt;&lt;/tr&gt;`});h+=`&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td&gt;합계&lt;/td&gt;&lt;td&gt;${fmt(totalsKeyed(p).current)}&lt;/td&gt;&lt;td&gt;${fmt(Object.values(a.used).reduce((s,v)=&gt;s+v,0))}&lt;/td&gt;&lt;td&gt;${fmt(totalsKeyed(p).current-Object.values(a.used).reduce((s,v)=&gt;s+v,0))}&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;`;document.getElementById(&#x27;allocationSummary&#x27;).innerHTML=h;let d=&#x27;&#x27;;a.detail.forEach(row=&gt;{let sumP=0,sumN=0;d+=`&lt;div class=&quot;packTitle&quot;&gt;${row.sku} 상세 작업표&lt;/div&gt;&lt;div class=&quot;scroll&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;번호&lt;/th&gt;&lt;th&gt;팩수&lt;/th&gt;&lt;th&gt;낱개수량&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;`;p.keys.forEach(k=&gt;{let packs=row.items[k]||0;let pcs=packs*row.pcsPerPack;sumP+=packs;sumN+=pcs;d+=`&lt;tr&gt;&lt;td&gt;${k}&lt;/td&gt;&lt;td&gt;${fmt(packs)}&lt;/td&gt;&lt;td&gt;${fmt(pcs)}&lt;/td&gt;&lt;/tr&gt;`});d+=`&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td&gt;합계&lt;/td&gt;&lt;td&gt;${fmt(sumP)}&lt;/td&gt;&lt;td&gt;${fmt(sumN)}&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;&lt;/table&gt;&lt;/div&gt;`});document.getElementById(&#x27;allocationDetail&#x27;).innerHTML=d}
+
+function scheduleRows(){if(!Array.isArray(state.workSchedule))state.workSchedule=[];return state.workSchedule}
+function addSchedule(){
+  let row={
+    date:document.getElementById(&#x27;schDate&#x27;).value.trim(),
+    channel:document.getElementById(&#x27;schChannel&#x27;).value,
+    product:document.getElementById(&#x27;schProduct&#x27;).value.trim(),
+    spec:document.getElementById(&#x27;schSpec&#x27;).value.trim(),
+    box:num(document.getElementById(&#x27;schBox&#x27;).value),
+    qty:num(document.getElementById(&#x27;schQty&#x27;).value),
+    note:document.getElementById(&#x27;schNote&#x27;).value,
+    status:&#x27;작업예정&#x27;
+  };
+  scheduleRows().unshift(row);
+  autoSave();
+  [&#x27;schDate&#x27;,&#x27;schProduct&#x27;,&#x27;schSpec&#x27;,&#x27;schBox&#x27;,&#x27;schQty&#x27;,&#x27;schNote&#x27;].forEach(id=&gt;document.getElementById(id).value=&#x27;&#x27;);
+  renderSchedule();
+}
+function delSchedule(i){
+  if(confirm(&#x27;이 작업일정을 삭제할까요?&#x27;)){
+    scheduleRows().splice(i,1); autoSave(); renderSchedule();
+  }
+}
+function editSchedule(i,k,v){
+  scheduleRows()[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?num(v):v;
+  autoSave();
+  if(k===&#x27;status&#x27;) renderSchedule();
+}
+function renderSchedule(){
+  let rows=scheduleRows();
+  let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;작업일정&lt;/th&gt;&lt;th&gt;판매처&lt;/th&gt;&lt;th&gt;제품&lt;/th&gt;&lt;th&gt;규격&lt;/th&gt;&lt;th&gt;BOX&lt;/th&gt;&lt;th&gt;수량&lt;/th&gt;&lt;th style=&quot;min-width:340px&quot;&gt;비고&lt;/th&gt;&lt;th&gt;상태&lt;/th&gt;&lt;th class=&quot;noPrint&quot;&gt;관리&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;
+  if(!rows.length) h+=&#x27;&lt;tr&gt;&lt;td colspan=&quot;9&quot; class=&quot;muted&quot;&gt;등록된 작업일정이 없습니다.&lt;/td&gt;&lt;/tr&gt;&#x27;;
+  rows.forEach((x,i)=&gt;{
+    let cls=x.status===&#x27;완료&#x27;?&#x27;done&#x27;:(x.status===&#x27;진행중&#x27;?&#x27;progress&#x27;:&#x27;&#x27;);
+    let note=(x.note||&#x27;&#x27;).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;);
+    h+=`&lt;tr&gt;
+      &lt;td&gt;&lt;input class=&quot;date&quot; value=&quot;${x.date||&#x27;&#x27;}&quot; onchange=&quot;editSchedule(${i},&#x27;date&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;select onchange=&quot;editSchedule(${i},&#x27;channel&#x27;,this.value)&quot;&gt;
+        &lt;option ${x.channel===&#x27;아마존&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;아마존&lt;/option&gt;
+        &lt;option ${x.channel===&#x27;쿠팡&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;쿠팡&lt;/option&gt;
+        &lt;option ${x.channel===&#x27;아마존+쿠팡&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;아마존+쿠팡&lt;/option&gt;
+      &lt;/select&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;input class=&quot;name&quot; value=&quot;${x.product||&#x27;&#x27;}&quot; onchange=&quot;editSchedule(${i},&#x27;product&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;input class=&quot;name&quot; value=&quot;${x.spec||&#x27;&#x27;}&quot; onchange=&quot;editSchedule(${i},&#x27;spec&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${x.box||0}&quot; onchange=&quot;editSchedule(${i},&#x27;box&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;input class=&quot;short num&quot; value=&quot;${x.qty||0}&quot; onchange=&quot;editSchedule(${i},&#x27;qty&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;textarea class=&quot;scheduleTableNote&quot; onchange=&quot;editSchedule(${i},&#x27;note&#x27;,this.value)&quot;&gt;${note}&lt;/textarea&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;select class=&quot;statusSelect ${cls}&quot; onchange=&quot;editSchedule(${i},&#x27;status&#x27;,this.value)&quot;&gt;
+        &lt;option ${x.status===&#x27;작업예정&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;작업예정&lt;/option&gt;
+        &lt;option ${x.status===&#x27;진행중&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;진행중&lt;/option&gt;
+        &lt;option ${x.status===&#x27;완료&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;완료&lt;/option&gt;
+      &lt;/select&gt;&lt;/td&gt;
+      &lt;td class=&quot;noPrint&quot;&gt;&lt;button class=&quot;btn red small&quot; onclick=&quot;delSchedule(${i})&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;
+    &lt;/tr&gt;`;
+  });
+  h+=&#x27;&lt;/tbody&gt;&#x27;;
+  document.getElementById(&#x27;scheduleTable&#x27;).innerHTML=h;
+}
+
+function renderAll(){renderProductSelect();renderSummary();renderKeyed();renderNormal()}
+function download(filename, text){let a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(new Blob([text],{type:&#x27;text/html;charset=utf-8&#x27;}));a.download=filename;document.body.appendChild(a);a.click();a.remove()}
+function saveShareHtml(){autoSave();fetch(location.href).then(r=&gt;r.text()).then(html=&gt;{let data=&#x27;&lt;script&gt;window.__SHARED_STATE__=&#x27;+JSON.stringify(state).replace(/&lt;/g,&#x27;\\u003c&#x27;)+&#x27;;&lt;\/script&gt;&#x27;;html=html.replace(&#x27;&lt;script&gt;\nconst NUM_KEYS&#x27;,data+&#x27;\n&lt;script&gt;\nconst NUM_KEYS&#x27;);download(&#x27;ZARKER_inventory_shared.html&#x27;,html)}).catch(()=&gt;alert(&#x27;공유용 저장은 다운로드 파일에서 제한될 수 있습니다. 백업 저장을 이용하세요.&#x27;))}
+function saveReportHtml(){let p=cur();let s=document.documentElement.outerHTML;let report=&#x27;&lt;!doctype html&gt;&lt;html lang=&quot;ko&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;title&gt;&#x27;+state.selected+&#x27; 보고서&lt;/title&gt;&lt;style&gt;body{font-family:Arial,\&#x27;Noto Sans KR\&#x27;,sans-serif;padding:14px;color:#0f172a}table{border-collapse:collapse;width:100%;font-size:12px;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:6px;text-align:center}th{background:#f1f5f9}h1{font-size:22px}.card{margin:14px 0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.box{border:1px solid #cbd5e1;border-radius:10px;padding:10px}.label{color:#64748b;font-size:12px}.value{font-size:22px;font-weight:900}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;&#x27;+state.selected+&#x27; 보고서&lt;/h1&gt;&#x27;+document.querySelector(&#x27;.card&#x27;).outerHTML+document.getElementById(&#x27;keyedArea&#x27;).innerHTML+document.getElementById(&#x27;normalArea&#x27;).innerHTML+&#x27;&lt;/body&gt;&lt;/html&gt;&#x27;;download(state.selected+&#x27;_보고서.html&#x27;,report)}
+function backup(){autoSave();let a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:&#x27;application/json&#x27;}));a.download=&#x27;zarker_inventory_backup.json&#x27;;a.click()}
+function restore(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=&gt;{try{state=JSON.parse(r.result);autoSave();renderAll();alert(&#x27;복원 완료&#x27;)}catch(e){alert(&#x27;복원 실패&#x27;)}};r.readAsText(f)}
+
+function setSyncStatus(msg){let el=document.getElementById(&#x27;syncStatus&#x27;); if(el) el.textContent=msg||&#x27;&#x27;}
+function saveToGoogle(){
+  autoSave();
+  try{
+    let iframe=document.getElementById(&#x27;googleSaveFrame&#x27;);
+    if(!iframe){iframe=document.createElement(&#x27;iframe&#x27;);iframe.name=&#x27;googleSaveFrame&#x27;;iframe.id=&#x27;googleSaveFrame&#x27;;iframe.style.display=&#x27;none&#x27;;document.body.appendChild(iframe)}
+    let form=document.createElement(&#x27;form&#x27;);
+    form.method=&#x27;POST&#x27;;
+    form.action=GOOGLE_SCRIPT_URL;
+    form.target=&#x27;googleSaveFrame&#x27;;
+    form.style.display=&#x27;none&#x27;;
+    let input=document.createElement(&#x27;input&#x27;);
+    input.name=&#x27;data&#x27;;
+    input.value=JSON.stringify(state);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    setSyncStatus(&#x27;저장 완료: &#x27;+new Date().toLocaleString(&#x27;ko-KR&#x27;));
+    alert(&#x27;저장되었습니다. 담당자는 최신 데이터 불러오기/새로고침으로 확인할 수 있습니다.&#x27;);
+  }catch(e){alert(&#x27;구글시트 저장 실패: &#x27;+e.message)}
+}
+function loadFromGoogle(){
+  window.__zarkerGoogleCallback=function(res){
+    try{
+      if(!res || !res.ok){alert(&#x27;구글시트 불러오기 실패&#x27;); return}
+      if(!res.data){alert(&#x27;저장된 데이터가 아직 없습니다. 먼저 구글시트 저장을 눌러주세요.&#x27;); return}
+      state=res.data;
+      autoSave();
+      renderAll();
+      setSyncStatus(&#x27;구글시트에서 불러옴: &#x27;+new Date().toLocaleString(&#x27;ko-KR&#x27;));
+      alert(&#x27;구글시트 최신 데이터를 불러왔습니다.&#x27;);
+    }catch(e){alert(&#x27;불러오기 처리 실패: &#x27;+e.message)}
+  };
+  let old=document.getElementById(&#x27;googleLoadScript&#x27;); if(old) old.remove();
+  let sc=document.createElement(&#x27;script&#x27;);
+  sc.id=&#x27;googleLoadScript&#x27;;
+  sc.src=GOOGLE_SCRIPT_URL+&#x27;?action=load&amp;callback=__zarkerGoogleCallback&amp;t=&#x27;+(Date.now());
+  sc.onerror=function(){alert(&#x27;구글시트 연결 실패. Apps Script 배포 URL 또는 권한을 확인해주세요.&#x27;)};
+  document.body.appendChild(sc);
+}
+
+renderAll();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+   <iframe id="scheduleFrame" class="frame" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
+&lt;title&gt;쿠팡 · 아마존 작업 일정&lt;/title&gt;
+&lt;style&gt;
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#0f172a;font-family:Arial,&#x27;Malgun Gothic&#x27;,sans-serif}
+.wrap{max-width:1450px;margin:auto;padding:26px 22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+h1{margin:0;font-size:26px}.sub{color:#64748b;font-size:13px;margin-top:5px}
+.actions{display:flex;gap:8px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;background:#2563eb;color:white}
+.btn.green{background:#16874a}.btn.light{background:#e8eef5;color:#0f172a}.btn.red{background:#dc2626}
+.card{background:#fff;border:1px solid #dbe3ed;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+.note{background:#fff7ed;border:1px solid #fdba74;color:#c2410c;padding:11px 12px;border-radius:10px;font-size:13px;margin-bottom:10px}
+.form{display:grid;grid-template-columns:105px 125px 180px 145px 82px 100px minmax(360px,1fr) 125px;gap:7px;align-items:start;margin-bottom:12px}
+input,select,textarea{border:1px solid #cbd5e1;border-radius:8px;padding:9px;font-size:14px;background:white;width:100%;min-width:0} select{white-space:nowrap}
+textarea{height:58px;resize:vertical;font-family:inherit;line-height:1.4}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+th{background:#eaf0f7;padding:10px;border:1px solid #d6e0eb;font-size:13px}
+td{border:1px solid #d6e0eb;padding:8px;text-align:center;vertical-align:middle} td select{min-width:100px}
+td textarea{width:100%;min-width:420px;min-height:100px;height:100px}
+.status{font-weight:800;min-width:90px}
+.status.done{background:#dcfce7;color:#166534}.status.progress{background:#fef3c7;color:#92400e}
+.muted{color:#64748b}
+@media(max-width:900px){
+ .wrap{padding:12px 8px}.top{display:block}.actions{margin-top:10px}
+ .form{grid-template-columns:1fr 1fr}.form .btn{grid-column:1/-1}
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+  &lt;div class=&quot;top&quot;&gt;
+    &lt;div&gt;&lt;h1&gt;쿠팡 · 아마존 작업 일정&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;작업지시 등록 및 생산동 완료 상태 관리&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn green&quot; onclick=&quot;saveGoogle()&quot;&gt;저장&lt;/button&gt;&lt;button class=&quot;btn light&quot; onclick=&quot;loadGoogle()&quot;&gt;최신 데이터 불러오기&lt;/button&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;div class=&quot;note&quot;&gt;작업지시를 등록하면 생산동 담당자가 작업예정 / 진행중 / 완료 상태를 변경할 수 있습니다.&lt;/div&gt;
+    &lt;div class=&quot;form&quot;&gt;
+      &lt;input id=&quot;d&quot; placeholder=&quot;26.09.01&quot;&gt;
+      &lt;select id=&quot;channel&quot;&gt;&lt;option&gt;아마존&lt;/option&gt;&lt;option&gt;쿠팡&lt;/option&gt;&lt;option&gt;아마존+쿠팡&lt;/option&gt;&lt;/select&gt;
+      &lt;input id=&quot;product&quot; placeholder=&quot;제품 예: J45S 동일키&quot;&gt;
+      &lt;input id=&quot;spec&quot; placeholder=&quot;규격 예: 2PACK&quot;&gt;
+      &lt;input id=&quot;box&quot; type=&quot;number&quot; placeholder=&quot;BOX&quot;&gt;
+      &lt;input id=&quot;qty&quot; type=&quot;number&quot; placeholder=&quot;수량&quot;&gt;
+      &lt;textarea id=&quot;note&quot; placeholder=&quot;비고&quot;&gt;&lt;/textarea&gt;
+      &lt;button class=&quot;btn&quot; onclick=&quot;addRow()&quot;&gt;+ 작업일정 추가&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;scroll&quot;&gt;&lt;table&gt;
+      &lt;colgroup&gt;
+      &lt;col style=&quot;width:105px&quot;&gt;&lt;col style=&quot;width:125px&quot;&gt;&lt;col style=&quot;width:175px&quot;&gt;&lt;col style=&quot;width:140px&quot;&gt;
+      &lt;col style=&quot;width:80px&quot;&gt;&lt;col style=&quot;width:100px&quot;&gt;&lt;col&gt;&lt;col style=&quot;width:105px&quot;&gt;&lt;col style=&quot;width:75px&quot;&gt;
+    &lt;/colgroup&gt;
+    &lt;thead&gt;&lt;tr&gt;&lt;th&gt;작업일정&lt;/th&gt;&lt;th&gt;판매처&lt;/th&gt;&lt;th&gt;제품&lt;/th&gt;&lt;th&gt;규격&lt;/th&gt;&lt;th&gt;BOX&lt;/th&gt;&lt;th&gt;수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;&lt;th&gt;상태&lt;/th&gt;&lt;th&gt;관리&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody id=&quot;tb&quot;&gt;&lt;/tbody&gt;
+    &lt;/table&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+const API=&#x27;https://script.google.com/macros/s/AKfycbxcJJVeNWWE-Yo3Bp8MGr17ielfAqgCwHQcAeLmUXdA8kPpGcye_Rc_S2VcgLU7W4ULsw/exec&#x27;;
+const KEY=&#x27;zarker_work_schedule_shared_v1&#x27;;
+let rows=JSON.parse(localStorage.getItem(KEY)||&#x27;[]&#x27;);
+
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify(rows))}
+function addRow(){
+ rows.unshift({date:d.value,channel:channel.value,product:product.value,spec:spec.value,box:Number(box.value)||0,qty:Number(qty.value)||0,note:note.value,status:&#x27;작업예정&#x27;});
+ saveLocal(); render();
+ [&#x27;d&#x27;,&#x27;product&#x27;,&#x27;spec&#x27;,&#x27;box&#x27;,&#x27;qty&#x27;,&#x27;note&#x27;].forEach(id=&gt;document.getElementById(id).value=&#x27;&#x27;);
+}
+function edit(i,k,v){rows[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?Number(v)||0:v;saveLocal();render()}
+function delRow(i){if(confirm(&#x27;이 작업일정을 삭제할까요?&#x27;)){rows.splice(i,1);saveLocal();render()}}
+function esc(s){return String(s??&#x27;&#x27;).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}
+function render(){
+ let h=&#x27;&#x27;;
+ if(!rows.length)h=&#x27;&lt;tr&gt;&lt;td colspan=&quot;9&quot; class=&quot;muted&quot;&gt;등록된 작업일정이 없습니다.&lt;/td&gt;&lt;/tr&gt;&#x27;;
+ rows.forEach((x,i)=&gt;{
+   const cls=x.status===&#x27;완료&#x27;?&#x27;done&#x27;:(x.status===&#x27;진행중&#x27;?&#x27;progress&#x27;:&#x27;&#x27;);
+   h+=`&lt;tr&gt;
+    &lt;td&gt;&lt;input value=&quot;${esc(x.date)}&quot; onchange=&quot;edit(${i},&#x27;date&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;select onchange=&quot;edit(${i},&#x27;channel&#x27;,this.value)&quot;&gt;&lt;option ${x.channel===&#x27;아마존&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;아마존&lt;/option&gt;&lt;option ${x.channel===&#x27;쿠팡&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;쿠팡&lt;/option&gt;&lt;option ${x.channel===&#x27;아마존+쿠팡&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;아마존+쿠팡&lt;/option&gt;&lt;/select&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;input value=&quot;${esc(x.product)}&quot; onchange=&quot;edit(${i},&#x27;product&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;input value=&quot;${esc(x.spec)}&quot; onchange=&quot;edit(${i},&#x27;spec&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;input type=&quot;number&quot; value=&quot;${x.box||0}&quot; onchange=&quot;edit(${i},&#x27;box&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;input type=&quot;number&quot; value=&quot;${x.qty||0}&quot; onchange=&quot;edit(${i},&#x27;qty&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;textarea onchange=&quot;edit(${i},&#x27;note&#x27;,this.value)&quot;&gt;${esc(x.note)}&lt;/textarea&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;select class=&quot;status ${cls}&quot; onchange=&quot;edit(${i},&#x27;status&#x27;,this.value)&quot;&gt;&lt;option ${x.status===&#x27;작업예정&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;작업예정&lt;/option&gt;&lt;option ${x.status===&#x27;진행중&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;진행중&lt;/option&gt;&lt;option ${x.status===&#x27;완료&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;완료&lt;/option&gt;&lt;/select&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;button class=&quot;btn red&quot; onclick=&quot;delRow(${i})&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;
+   &lt;/tr&gt;`;
+ });
+ tb.innerHTML=h;
+}
+function saveGoogle(){
+ saveLocal();
+ if(!API){alert(&#x27;Google 저장 주소가 없습니다.&#x27;);return}
+ let fd=new URLSearchParams();
+ fd.set(&#x27;data&#x27;,JSON.stringify({workSchedule:rows}));
+ fetch(API,{method:&#x27;POST&#x27;,headers:{&#x27;Content-Type&#x27;:&#x27;application/x-www-form-urlencoded&#x27;},body:fd.toString(),mode:&#x27;no-cors&#x27;})
+ .then(()=&gt;alert(&#x27;작업일정을 저장했습니다.&#x27;)).catch(()=&gt;alert(&#x27;저장에 실패했습니다.&#x27;));
+}
+function loadGoogle(){
+ if(!API){alert(&#x27;Google 저장 주소가 없습니다.&#x27;);return}
+ const cb=&#x27;zarkerScheduleCb_&#x27;+Date.now();
+ window[cb]=res=&gt;{
+  try{
+   const data=res&amp;&amp;res.data;
+   if(data&amp;&amp;Array.isArray(data.workSchedule)) rows=data.workSchedule;
+   else if(data&amp;&amp;data.workSchedule) rows=data.workSchedule;
+   saveLocal();render();alert(&#x27;최신 작업일정을 불러왔습니다.&#x27;);
+  }finally{delete window[cb];document.getElementById(cb)?.remove()}
+ };
+ const s=document.createElement(&#x27;script&#x27;);s.id=cb;s.src=API+&#x27;?action=load&amp;callback=&#x27;+cb;document.body.appendChild(s);
+}
+render();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+   <iframe id="chinaFrame" class="frame" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
+&lt;title&gt;중국발주 관리&lt;/title&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+*{box-sizing:border-box}
+body{margin:0;background:#f3f7fa;color:#051e4b;font-family:Arial,&#x27;Malgun Gothic&#x27;,sans-serif}
+.wrap{max-width:1600px;margin:auto;padding:24px 20px 50px}
+h1{margin:0 0 5px;font-size:28px;color:#1c7096;letter-spacing:-.03em}.sub{color:#747776;font-size:13px;margin-bottom:18px}
+.card{background:#fff;border:1px solid rgba(28,112,150,.18);border-radius:15px;padding:16px;margin-bottom:14px;box-shadow:0 7px 22px rgba(5,30,75,.06)}
+.uploads{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.uploadbox{border:1px dashed #41afc8;border-radius:11px;padding:13px;background:#f2fbfc}
+.uploadbox b{display:block;margin-bottom:6px}.fileName{font-size:12px;color:#64748b;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#41afc8,#1487b4);color:#fff;box-shadow:0 4px 11px rgba(28,112,150,.18)}
+.btn.green{background:#1c7096}.btn.gray{background:#e7f2f6;color:#1c7096}.btn.red{background:#c82121}
+input,select,textarea{border:1px solid #b9ced8;border-radius:8px;padding:8px 9px;font-family:inherit;font-size:13px;background:#fff;color:#051e4b}input:focus,select:focus,textarea:focus{outline:2px solid rgba(50,180,180,.28);border-color:#32b4b4}
+.controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.field label{display:block;color:#667085;font-size:12px;font-weight:700;margin-bottom:5px}
+.field input{width:170px;height:38px}.field.small input{width:105px}.field.month input{width:90px}
+.history{margin-top:14px}.recordPicker{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.recordPicker select{min-width:300px;max-width:520px;height:40px;font-weight:800;color:#051e4b}.recordCount{font-size:12px;color:#747776;font-weight:700}
+.hist{border:1px solid #cbd5e1;background:#fff;color:#344054;padding:8px 12px;border-radius:18px;font-weight:800;cursor:pointer}
+.hist.active{background:#1c7096;color:white;border-color:#1c7096}
+.statusline{font-size:12px;color:#667085;margin-top:9px}
+.tableWrap{overflow:auto;max-height:calc(100vh - 90px);border-radius:9px}
+table{width:100%;border-collapse:collapse;min-width:1320px;font-size:12px}
+th{background:linear-gradient(90deg,#1c7096,#1487b4);color:white;padding:10px 7px;white-space:nowrap;position:sticky;top:0;z-index:20;box-shadow:0 2px 0 rgba(5,30,75,.18)}
+td{border-bottom:1px solid #dfe9ee;padding:8px 7px;vertical-align:middle}tbody tr:nth-child(even) td{background:#f8fbfc}
+tr.long td{background:inherit}
+.group{font-weight:900;color:#1c7096;white-space:nowrap}
+.name{font-weight:800;white-space:nowrap}.badge{display:inline-block;background:#c82121;color:#fff;border-radius:8px;padding:3px 6px;font-size:10px;margin-left:5px}.group .badge{display:block;width:max-content;margin:5px auto 0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.stockValue{display:inline-block;min-width:76px;text-align:right;font-weight:900;color:#051e4b;padding:7px 9px;background:#edf5f8;border-radius:8px;border:1px solid #d6e6ed}.order{width:95px;text-align:right}
+.note{width:100%;min-width:270px;min-height:55px;resize:vertical}
+.neg{color:#d11;font-weight:800}.good{color:#137333;font-weight:800}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.kpi{background:linear-gradient(180deg,#fff,#f0f8fa);border:1px solid #d4e7ee;border-radius:10px;padding:11px;border-top:3px solid #32b4b4}.kpi span{display:block;font-size:11px;color:#747776}.kpi b{font-size:19px;color:#1c7096}
+.hidden{display:none!important}.emptyState{padding:20px;border:1px dashed #b9ced8;border-radius:10px;color:#747776;background:#f8fbfc;text-align:center}.recordMeta{font-size:12px;color:#747776;margin-top:7px}h2{margin:0 0 8px;color:#1c7096}.versionTag{display:inline-block;vertical-align:middle;margin-left:8px;padding:4px 8px;border-radius:999px;background:#051e4b;color:#fff;font-size:11px;letter-spacing:.04em}
+#recordDetail .recordTableWrap{max-height:calc(100vh - 215px)}#recordDetail .recordTable{min-width:1450px;font-size:14px}#recordDetail .recordTable th{padding:12px 9px;font-size:13px}#recordDetail .recordTable tbody tr{height:66px}#recordDetail .recordTable td{padding:12px 9px;line-height:1.45}#recordDetail .recordTable .group,#recordDetail .recordTable .name{font-size:14px}#recordDetail .recordTable td:last-child{min-width:300px;white-space:normal}#recordDetail .recordTable .stockValue{font-size:14px}#recordDetail .recordTable .neg{color:#d11;font-weight:900}
+@media(max-width:900px){.wrap{padding:12px 8px}.uploads{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+  &lt;h1&gt;중국발주 관리 &lt;span class=&quot;versionTag&quot;&gt;v21&lt;/span&gt;&lt;/h1&gt;
+  &lt;div class=&quot;sub&quot;&gt;매출 엑셀 + 재고 엑셀을 업로드해 월별 발주검토 기록을 생성하고 과거 기록을 계속 보관합니다.&lt;/div&gt;
+
+  &lt;div class=&quot;card orderOnly&quot;&gt;
+    &lt;div class=&quot;uploads&quot;&gt;
+      &lt;div class=&quot;uploadbox&quot;&gt;
+        &lt;b&gt;① 매출 엑셀파일&lt;/b&gt;
+        &lt;input id=&quot;salesFile&quot; type=&quot;file&quot; accept=&quot;.xlsx,.xls,.csv&quot;&gt;
+        &lt;div id=&quot;salesName&quot; class=&quot;fileName&quot;&gt;파일을 선택해 주세요.&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;uploadbox&quot;&gt;
+        &lt;b&gt;② 재고 엑셀파일&lt;/b&gt;
+        &lt;input id=&quot;stockFile&quot; type=&quot;file&quot; accept=&quot;.xlsx,.xls,.csv&quot;&gt;
+        &lt;div id=&quot;stockName&quot; class=&quot;fileName&quot;&gt;파일을 선택해 주세요.&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button id=&quot;applyBtn&quot; class=&quot;btn green&quot; onclick=&quot;applyFiles()&quot;&gt;두 파일 적용&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;statusline&quot;&gt;재고파일은 본사 + 포천 + 쿠팡 + 아마존 재고를 합산합니다. 매출파일은 자커 제품만 제품/규격 기준으로 집계합니다.&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card orderOnly&quot;&gt;
+    &lt;div class=&quot;controls&quot;&gt;
+      &lt;div class=&quot;field&quot;&gt;&lt;label&gt;새 기록 제목&lt;/label&gt;&lt;input id=&quot;recordTitle&quot; value=&quot;26.09.01 발주검토&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;field month&quot;&gt;&lt;label&gt;판매 집계 시작월&lt;/label&gt;&lt;input id=&quot;salesStart&quot; type=&quot;month&quot; value=&quot;2025-09&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;field month&quot;&gt;&lt;label&gt;판매 집계 종료월&lt;/label&gt;&lt;input id=&quot;salesEnd&quot; type=&quot;month&quot; value=&quot;2026-08&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;field small&quot;&gt;&lt;label&gt;월평균 계산 개월수&lt;/label&gt;&lt;input id=&quot;avgMonths&quot; type=&quot;number&quot; min=&quot;1&quot; value=&quot;12&quot; readonly&gt;&lt;/div&gt;
+      &lt;div class=&quot;field month&quot;&gt;&lt;label&gt;예상재고 기준월&lt;/label&gt;&lt;input id=&quot;forecastMonth&quot; value=&quot;27.07&quot; placeholder=&quot;27.07&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;field month&quot;&gt;&lt;label&gt;여유개월 기준월&lt;/label&gt;&lt;input id=&quot;spareMonth&quot; value=&quot;27.07&quot; placeholder=&quot;27.07&quot;&gt;&lt;/div&gt;
+      &lt;button class=&quot;btn&quot; onclick=&quot;saveRecord()&quot;&gt;새 기록 저장&lt;/button&gt;
+      &lt;button class=&quot;btn gray&quot; onclick=&quot;startFresh()&quot;&gt;새로 시작&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;fileInfo&quot; class=&quot;statusline&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card orderOnly&quot;&gt;
+    &lt;div class=&quot;summary&quot;&gt;
+      &lt;div class=&quot;kpi&quot;&gt;&lt;span&gt;관리 품목&lt;/span&gt;&lt;b id=&quot;kpiItems&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;kpi&quot;&gt;&lt;span&gt;S시리즈 장기생산&lt;/span&gt;&lt;b id=&quot;kpiLong&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;kpi&quot;&gt;&lt;span&gt;발주수량 입력 합계&lt;/span&gt;&lt;b id=&quot;kpiOrder&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;kpi&quot;&gt;&lt;span&gt;현재고 합계&lt;/span&gt;&lt;b id=&quot;kpiStock&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;card tableWrap orderOnly&quot;&gt;
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;구분&lt;/th&gt;&lt;th&gt;제품/규격&lt;/th&gt;&lt;th&gt;판매량&lt;/th&gt;&lt;th&gt;월평균 판매량&lt;/th&gt;&lt;th&gt;현재고&lt;/th&gt;
+          &lt;th id=&quot;forecastHead&quot;&gt;27.07 예상재고&lt;/th&gt;&lt;th id=&quot;spareHead&quot;&gt;27.07 기준 여유개월수&lt;/th&gt;
+          &lt;th&gt;발주수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody id=&quot;tbody&quot;&gt;&lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;recordView&quot; class=&quot;hidden&quot;&gt;
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;h2&gt;중국발주 기록&lt;/h2&gt;
+      &lt;div class=&quot;statusline&quot;&gt;저장한 발주검토 기록을 선택하면 당시 판매량, 현재고, 발주수량과 비고를 확인할 수 있습니다.&lt;/div&gt;
+      &lt;div id=&quot;savedHistory&quot; class=&quot;history&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;recordDetail&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const PRODUCT_MASTER=[{&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD25*&quot;, &quot;sales&quot;: 84143.0, &quot;stock&quot;: 18945.0, &quot;orderQty&quot;: 70000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD35*&quot;, &quot;sales&quot;: 210400.0, &quot;stock&quot;: 58384.0, &quot;orderQty&quot;: 160000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD40*&quot;, &quot;sales&quot;: 634565.0, &quot;stock&quot;: 216665.0, &quot;orderQty&quot;: 420000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40L&quot;, &quot;sales&quot;: 18527.0, &quot;stock&quot;: 1948.0, &quot;orderQty&quot;: 30000.0, &quot;note&quot;: &quot;* 쿠팡 늘어남&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50&quot;, &quot;sales&quot;: 126073.0, &quot;stock&quot;: 41461.0, &quot;orderQty&quot;: 100000.0, &quot;note&quot;: &quot;* 브리+하드케이스+홈플러스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50L&quot;, &quot;sales&quot;: 15606.0, &quot;stock&quot;: 11514.0, &quot;orderQty&quot;: 6000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X70&quot;, &quot;sales&quot;: 10015.0, &quot;stock&quot;: 2874.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(BLUE)&quot;, &quot;sales&quot;: 410.0, &quot;stock&quot;: 5652.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 그레이 컬러는 한국기업, 한솔등 기존 거래처 출고\n\n* 그외 컬러 : 박팀장 발주요청(쿠팡+아마존)\n(4주~5주 입고일정 예상으로 발주 진행중)\n&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(GRAY)&quot;, &quot;sales&quot;: 9590.0, &quot;stock&quot;: 2658.0, &quot;orderQty&quot;: 7000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(GREEN)&quot;, &quot;sales&quot;: 180.0, &quot;stock&quot;: 7128.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(PINK)&quot;, &quot;sales&quot;: 228.0, &quot;stock&quot;: 7936.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(YELLOW)&quot;, &quot;sales&quot;: 120.0, &quot;stock&quot;: 5990.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(컬러_쿠팡)&quot;, &quot;sales&quot;: 9552.0, &quot;stock&quot;: 352.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(BLUE)&quot;, &quot;sales&quot;: 5147.0, &quot;stock&quot;: 8092.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GRAY)&quot;, &quot;sales&quot;: 21743.0, &quot;stock&quot;: 18481.0, &quot;orderQty&quot;: 4800.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GREEN)&quot;, &quot;sales&quot;: 24767.0, &quot;stock&quot;: 6065.0, &quot;orderQty&quot;: 20000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(PINK)&quot;, &quot;sales&quot;: 11224.0, &quot;stock&quot;: 12462.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(YELLOW)&quot;, &quot;sales&quot;: 12448.0, &quot;stock&quot;: 5186.0, &quot;orderQty&quot;: 9600.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(컬러_쿠팡)&quot;, &quot;sales&quot;: 7826.0, &quot;stock&quot;: 511.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(BLUE)&quot;, &quot;sales&quot;: 1147.0, &quot;stock&quot;: 2302.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(GRAY)&quot;, &quot;sales&quot;: 47883.0, &quot;stock&quot;: 9579.0, &quot;orderQty&quot;: 40000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(GREEN)&quot;, &quot;sales&quot;: 2413.0, &quot;stock&quot;: 1901.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(PINK)&quot;, &quot;sales&quot;: 1591.0, &quot;stock&quot;: 3005.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(YELLOW)&quot;, &quot;sales&quot;: 1363.0, &quot;stock&quot;: 2435.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(컬러_쿠팡)&quot;, &quot;sales&quot;: 860.0, &quot;stock&quot;: 355.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;XB35*&quot;, &quot;sales&quot;: 39433.0, &quot;stock&quot;: 38342.0, &quot;orderQty&quot;: 3000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;XB40*&quot;, &quot;sales&quot;: 7595.0, &quot;stock&quot;: 3062.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;동일 XB35(#2467)&quot;, &quot;sales&quot;: 570.0, &quot;stock&quot;: 2632.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;동일 XB35*(#1234)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(GRAY)&quot;, &quot;sales&quot;: 5710.0, &quot;stock&quot;: 2026.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(BLUE)&quot;, &quot;sales&quot;: 824.0, &quot;stock&quot;: 3003.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;쿠팡+아마존 판매&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(GREEN)&quot;, &quot;sales&quot;: 2226.0, &quot;stock&quot;: 6856.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(PINK)&quot;, &quot;sales&quot;: 1196.0, &quot;stock&quot;: 7675.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(YELLOW)&quot;, &quot;sales&quot;: 811.0, &quot;stock&quot;: 3288.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(컬러)&quot;, &quot;sales&quot;: 4650.0, &quot;stock&quot;: 140.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;컬러 혼합으로 발주 X / 박차장 직접 각각 컬러별 요청&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB40(GRAY)&quot;, &quot;sales&quot;: 2580.0, &quot;stock&quot;: 2234.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C 78&quot;, &quot;sales&quot;: 1924.0, &quot;stock&quot;: 5263.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 입고기간\n기본 3개월(최대 5개월정도)&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C 90&quot;, &quot;sales&quot;: 11088.0, &quot;stock&quot;: 7279.0, &quot;orderQty&quot;: 6000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C120&quot;, &quot;sales&quot;: 1963.0, &quot;stock&quot;: 963.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;MK&quot;, &quot;sales&quot;: 989.0, &quot;stock&quot;: 1704.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;MN&quot;, &quot;sales&quot;: 3602.0, &quot;stock&quot;: 2067.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;NO-75&quot;, &quot;sales&quot;: 7160.0, &quot;stock&quot;: 8637.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;NO-90&quot;, &quot;sales&quot;: 64037.0, &quot;stock&quot;: 21397.0, &quot;orderQty&quot;: 60000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK1190&quot;, &quot;sales&quot;: 795.0, &quot;stock&quot;: 1233.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK1290&quot;, &quot;sales&quot;: 506.0, &quot;stock&quot;: 858.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK3112&quot;, &quot;sales&quot;: 925.0, &quot;stock&quot;: 880.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK3212&quot;, &quot;sales&quot;: 380.0, &quot;stock&quot;: 812.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S40&quot;, &quot;sales&quot;: 2913.0, &quot;stock&quot;: 3571.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S404&quot;, &quot;sales&quot;: 4163.0, &quot;stock&quot;: 217.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;* 2개월정도 여유분 더 발주&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S405&quot;, &quot;sales&quot;: 930.0, &quot;stock&quot;: 2480.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S406&quot;, &quot;sales&quot;: 1179.0, &quot;stock&quot;: 569.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S407&quot;, &quot;sales&quot;: 92.0, &quot;stock&quot;: 556.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S408&quot;, &quot;sales&quot;: 270.0, &quot;stock&quot;: 589.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S456&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 291.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S50&quot;, &quot;sales&quot;: 1303.0, &quot;stock&quot;: 3650.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S501&quot;, &quot;sales&quot;: 240.0, &quot;stock&quot;: 1522.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 2개월정도 여유분 더 발주&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S502&quot;, &quot;sales&quot;: 1021.0, &quot;stock&quot;: 1680.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S503&quot;, &quot;sales&quot;: 90.0, &quot;stock&quot;: 210.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S504&quot;, &quot;sales&quot;: 40.0, &quot;stock&quot;: 269.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;재료S40&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 517.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;재료S50&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W41&quot;, &quot;sales&quot;: 3690.0, &quot;stock&quot;: 1689.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W42&quot;, &quot;sales&quot;: 3590.0, &quot;stock&quot;: 1297.0, &quot;orderQty&quot;: 2200.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W43&quot;, &quot;sales&quot;: 840.0, &quot;stock&quot;: 1115.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W51&quot;, &quot;sales&quot;: 390.0, &quot;stock&quot;: 1768.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W52&quot;, &quot;sales&quot;: 560.0, &quot;stock&quot;: 2059.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W53&quot;, &quot;sales&quot;: 540.0, &quot;stock&quot;: 232.0, &quot;orderQty&quot;: 500.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W41&quot;, &quot;sales&quot;: 521.0, &quot;stock&quot;: 949.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W42&quot;, &quot;sales&quot;: 504.0, &quot;stock&quot;: 1295.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W43&quot;, &quot;sales&quot;: 110.0, &quot;stock&quot;: 84.0, &quot;orderQty&quot;: 300.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W51_NEW&quot;, &quot;sales&quot;: 158.0, &quot;stock&quot;: 273.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W52_NEW&quot;, &quot;sales&quot;: 62.0, &quot;stock&quot;: 282.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W53&quot;, &quot;sales&quot;: 107.0, &quot;stock&quot;: 194.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B25&quot;, &quot;sales&quot;: 1692.0, &quot;stock&quot;: 905.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot; * 신제품으로 인해 단종&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B32&quot;, &quot;sales&quot;: 1118.0, &quot;stock&quot;: 6852.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B38&quot;, &quot;sales&quot;: 1064.0, &quot;stock&quot;: 2873.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B50&quot;, &quot;sales&quot;: 1045.0, &quot;stock&quot;: 1722.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B25&quot;, &quot;sales&quot;: 2670.0, &quot;stock&quot;: 1086.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B32&quot;, &quot;sales&quot;: 1414.0, &quot;stock&quot;: 7365.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B38&quot;, &quot;sales&quot;: 378.0, &quot;stock&quot;: 1441.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B50&quot;, &quot;sales&quot;: 311.0, &quot;stock&quot;: 636.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;4\&quot;(16mm)&quot;, &quot;sales&quot;: 31280.0, &quot;stock&quot;: 34610.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;*입고기간\n4\&quot;(9.5mm) : 단종예정 &quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;4\&quot;(9.5mm)&quot;, &quot;sales&quot;: 16870.0, &quot;stock&quot;: 9020.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;5\&quot;&quot;, &quot;sales&quot;: 106270.0, &quot;stock&quot;: 66770.0, &quot;orderQty&quot;: 50000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;storm 14\&quot;&quot;, &quot;sales&quot;: 250.0, &quot;stock&quot;: 2220.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;숫돌&quot;, &quot;name&quot;: &quot;#180/#300&quot;, &quot;sales&quot;: 5040.0, &quot;stock&quot;: 1777.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;* 발주후 입고기간 확인필요 &quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직13-3.5m&quot;, &quot;sales&quot;: 8430.0, &quot;stock&quot;: 1792.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;* 입고기간\n베이직19-5.0m : 재고소진 후 단종 \n5.0m-22m/m 尺 : 재고소진 후 단종 \n베이직19-5.5m : 몽골대비(발주시 1,000EA) \n베이직25-7.5m : 몽골대비(발주시 2,000EA) \n&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직19-5.0m&quot;, &quot;sales&quot;: 3818.0, &quot;stock&quot;: 697.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직19-5.5m&quot;, &quot;sales&quot;: 12120.0, &quot;stock&quot;: 5577.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직25-7.5m&quot;, &quot;sales&quot;: 18592.0, &quot;stock&quot;: 3073.0, &quot;orderQty&quot;: 17000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;롱라인30m&quot;, &quot;sales&quot;: 113.0, &quot;stock&quot;: 1967.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;롱라인50m&quot;, &quot;sales&quot;: 727.0, &quot;stock&quot;: 1335.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-19m/m 尺&quot;, &quot;sales&quot;: 5364.0, &quot;stock&quot;: 23.0, &quot;orderQty&quot;: 7000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-19mm inch(인치)&quot;, &quot;sales&quot;: 3246.0, &quot;stock&quot;: 4686.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-22m/m 尺&quot;, &quot;sales&quot;: 1210.0, &quot;stock&quot;: 4435.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;7.5m-尺&quot;, &quot;sales&quot;: 1546.0, &quot;stock&quot;: 5120.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J45&quot;, &quot;sales&quot;: 1961.0, &quot;stock&quot;: 8798.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;박팀장 직접 발주요청\n* 브리+하드케이스\nJ45S 아마존 주력(동일키 포장제품 각키변환) \nJ55 국내 MRO 납품 구이사 직접 발주요청&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J45S&quot;, &quot;sales&quot;: 13682.0, &quot;stock&quot;: 8179.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J55&quot;, &quot;sales&quot;: 23768.0, &quot;stock&quot;: 11503.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J55S&quot;, &quot;sales&quot;: 1719.0, &quot;stock&quot;: 4966.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Blue)&quot;, &quot;sales&quot;: 330.0, &quot;stock&quot;: 2831.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Red)&quot;, &quot;sales&quot;: 135.0, &quot;stock&quot;: 2736.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Silver)&quot;, &quot;sales&quot;: 586.0, &quot;stock&quot;: 1825.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A41 (Silver)&quot;, &quot;sales&quot;: 507.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 800.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (동일)  Silver&quot;, &quot;sales&quot;: 390.0, &quot;stock&quot;: 250.0, &quot;orderQty&quot;: 500.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;G70&quot;, &quot;sales&quot;: 391.0, &quot;stock&quot;: 4179.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Green)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 2722.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;데이터 부족 \n추후 발주요청 예정&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Pink)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 1532.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Red)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 3050.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(White)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 3255.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Yellow)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 1770.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}];
+const INITIAL={&quot;title&quot;: &quot;26.07.13 기준기록&quot;, &quot;avgMonths&quot;: 12, &quot;forecastMonth&quot;: &quot;27.07&quot;, &quot;spareMonth&quot;: &quot;27.07&quot;, &quot;salesFile&quot;: &quot;&quot;, &quot;stockFile&quot;: &quot;&quot;, &quot;rows&quot;: [{&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD25*&quot;, &quot;sales&quot;: 84143.0, &quot;stock&quot;: 18945.0, &quot;orderQty&quot;: 70000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD35*&quot;, &quot;sales&quot;: 210400.0, &quot;stock&quot;: 58384.0, &quot;orderQty&quot;: 160000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;XD40*&quot;, &quot;sales&quot;: 634565.0, &quot;stock&quot;: 216665.0, &quot;orderQty&quot;: 420000.0, &quot;note&quot;: &quot;* 종이 미포장 + *&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40L&quot;, &quot;sales&quot;: 18527.0, &quot;stock&quot;: 1948.0, &quot;orderQty&quot;: 30000.0, &quot;note&quot;: &quot;* 쿠팡 늘어남&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50&quot;, &quot;sales&quot;: 126073.0, &quot;stock&quot;: 41461.0, &quot;orderQty&quot;: 100000.0, &quot;note&quot;: &quot;* 브리+하드케이스+홈플러스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50L&quot;, &quot;sales&quot;: 15606.0, &quot;stock&quot;: 11514.0, &quot;orderQty&quot;: 6000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X70&quot;, &quot;sales&quot;: 10015.0, &quot;stock&quot;: 2874.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(BLUE)&quot;, &quot;sales&quot;: 410.0, &quot;stock&quot;: 5652.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 그레이 컬러는 한국기업, 한솔등 기존 거래처 출고\n\n* 그외 컬러 : 박팀장 발주요청(쿠팡+아마존)\n(4주~5주 입고일정 예상으로 발주 진행중)\n&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(GRAY)&quot;, &quot;sales&quot;: 9590.0, &quot;stock&quot;: 2658.0, &quot;orderQty&quot;: 7000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(GREEN)&quot;, &quot;sales&quot;: 180.0, &quot;stock&quot;: 7128.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(PINK)&quot;, &quot;sales&quot;: 228.0, &quot;stock&quot;: 7936.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(YELLOW)&quot;, &quot;sales&quot;: 120.0, &quot;stock&quot;: 5990.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(컬러_쿠팡)&quot;, &quot;sales&quot;: 9552.0, &quot;stock&quot;: 352.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(BLUE)&quot;, &quot;sales&quot;: 5147.0, &quot;stock&quot;: 8092.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GRAY)&quot;, &quot;sales&quot;: 21743.0, &quot;stock&quot;: 18481.0, &quot;orderQty&quot;: 4800.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GREEN)&quot;, &quot;sales&quot;: 24767.0, &quot;stock&quot;: 6065.0, &quot;orderQty&quot;: 20000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(PINK)&quot;, &quot;sales&quot;: 11224.0, &quot;stock&quot;: 12462.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(YELLOW)&quot;, &quot;sales&quot;: 12448.0, &quot;stock&quot;: 5186.0, &quot;orderQty&quot;: 9600.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(컬러_쿠팡)&quot;, &quot;sales&quot;: 7826.0, &quot;stock&quot;: 511.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(BLUE)&quot;, &quot;sales&quot;: 1147.0, &quot;stock&quot;: 2302.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(GRAY)&quot;, &quot;sales&quot;: 47883.0, &quot;stock&quot;: 9579.0, &quot;orderQty&quot;: 40000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(GREEN)&quot;, &quot;sales&quot;: 2413.0, &quot;stock&quot;: 1901.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(PINK)&quot;, &quot;sales&quot;: 1591.0, &quot;stock&quot;: 3005.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(YELLOW)&quot;, &quot;sales&quot;: 1363.0, &quot;stock&quot;: 2435.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(컬러_쿠팡)&quot;, &quot;sales&quot;: 860.0, &quot;stock&quot;: 355.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;XB35*&quot;, &quot;sales&quot;: 39433.0, &quot;stock&quot;: 38342.0, &quot;orderQty&quot;: 3000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;XB40*&quot;, &quot;sales&quot;: 7595.0, &quot;stock&quot;: 3062.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;동일 XB35(#2467)&quot;, &quot;sales&quot;: 570.0, &quot;stock&quot;: 2632.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;동일 XB35*(#1234)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(GRAY)&quot;, &quot;sales&quot;: 5710.0, &quot;stock&quot;: 2026.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(BLUE)&quot;, &quot;sales&quot;: 824.0, &quot;stock&quot;: 3003.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;쿠팡+아마존 판매&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(GREEN)&quot;, &quot;sales&quot;: 2226.0, &quot;stock&quot;: 6856.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(PINK)&quot;, &quot;sales&quot;: 1196.0, &quot;stock&quot;: 7675.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(YELLOW)&quot;, &quot;sales&quot;: 811.0, &quot;stock&quot;: 3288.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(컬러)&quot;, &quot;sales&quot;: 4650.0, &quot;stock&quot;: 140.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;컬러 혼합으로 발주 X / 박차장 직접 각각 컬러별 요청&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB40(GRAY)&quot;, &quot;sales&quot;: 2580.0, &quot;stock&quot;: 2234.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C 78&quot;, &quot;sales&quot;: 1924.0, &quot;stock&quot;: 5263.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 입고기간\n기본 3개월(최대 5개월정도)&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C 90&quot;, &quot;sales&quot;: 11088.0, &quot;stock&quot;: 7279.0, &quot;orderQty&quot;: 6000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;C120&quot;, &quot;sales&quot;: 1963.0, &quot;stock&quot;: 963.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;MK&quot;, &quot;sales&quot;: 989.0, &quot;stock&quot;: 1704.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;MN&quot;, &quot;sales&quot;: 3602.0, &quot;stock&quot;: 2067.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;NO-75&quot;, &quot;sales&quot;: 7160.0, &quot;stock&quot;: 8637.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;NO-90&quot;, &quot;sales&quot;: 64037.0, &quot;stock&quot;: 21397.0, &quot;orderQty&quot;: 60000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK1190&quot;, &quot;sales&quot;: 795.0, &quot;stock&quot;: 1233.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK1290&quot;, &quot;sales&quot;: 506.0, &quot;stock&quot;: 858.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK3112&quot;, &quot;sales&quot;: 925.0, &quot;stock&quot;: 880.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;ZK3212&quot;, &quot;sales&quot;: 380.0, &quot;stock&quot;: 812.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S40&quot;, &quot;sales&quot;: 2913.0, &quot;stock&quot;: 3571.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S404&quot;, &quot;sales&quot;: 4163.0, &quot;stock&quot;: 217.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;* 2개월정도 여유분 더 발주&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S405&quot;, &quot;sales&quot;: 930.0, &quot;stock&quot;: 2480.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S406&quot;, &quot;sales&quot;: 1179.0, &quot;stock&quot;: 569.0, &quot;orderQty&quot;: 1000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S407&quot;, &quot;sales&quot;: 92.0, &quot;stock&quot;: 556.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S408&quot;, &quot;sales&quot;: 270.0, &quot;stock&quot;: 589.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S456&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 291.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S50&quot;, &quot;sales&quot;: 1303.0, &quot;stock&quot;: 3650.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 브리+하드케이스&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S501&quot;, &quot;sales&quot;: 240.0, &quot;stock&quot;: 1522.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;* 2개월정도 여유분 더 발주&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S502&quot;, &quot;sales&quot;: 1021.0, &quot;stock&quot;: 1680.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S503&quot;, &quot;sales&quot;: 90.0, &quot;stock&quot;: 210.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;동일S504&quot;, &quot;sales&quot;: 40.0, &quot;stock&quot;: 269.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;재료S40&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 517.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;재료S50&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: true}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W41&quot;, &quot;sales&quot;: 3690.0, &quot;stock&quot;: 1689.0, &quot;orderQty&quot;: 2000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W42&quot;, &quot;sales&quot;: 3590.0, &quot;stock&quot;: 1297.0, &quot;orderQty&quot;: 2200.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W43&quot;, &quot;sales&quot;: 840.0, &quot;stock&quot;: 1115.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W51&quot;, &quot;sales&quot;: 390.0, &quot;stock&quot;: 1768.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W52&quot;, &quot;sales&quot;: 560.0, &quot;stock&quot;: 2059.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;W53&quot;, &quot;sales&quot;: 540.0, &quot;stock&quot;: 232.0, &quot;orderQty&quot;: 500.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W41&quot;, &quot;sales&quot;: 521.0, &quot;stock&quot;: 949.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W42&quot;, &quot;sales&quot;: 504.0, &quot;stock&quot;: 1295.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W43&quot;, &quot;sales&quot;: 110.0, &quot;stock&quot;: 84.0, &quot;orderQty&quot;: 300.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W51_NEW&quot;, &quot;sales&quot;: 158.0, &quot;stock&quot;: 273.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W52_NEW&quot;, &quot;sales&quot;: 62.0, &quot;stock&quot;: 282.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;마스터&quot;, &quot;name&quot;: &quot;키재료W53&quot;, &quot;sales&quot;: 107.0, &quot;stock&quot;: 194.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B25&quot;, &quot;sales&quot;: 1692.0, &quot;stock&quot;: 905.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot; * 신제품으로 인해 단종&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B32&quot;, &quot;sales&quot;: 1118.0, &quot;stock&quot;: 6852.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B38&quot;, &quot;sales&quot;: 1064.0, &quot;stock&quot;: 2873.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;B50&quot;, &quot;sales&quot;: 1045.0, &quot;stock&quot;: 1722.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B25&quot;, &quot;sales&quot;: 2670.0, &quot;stock&quot;: 1086.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B32&quot;, &quot;sales&quot;: 1414.0, &quot;stock&quot;: 7365.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B38&quot;, &quot;sales&quot;: 378.0, &quot;stock&quot;: 1441.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;황동&quot;, &quot;name&quot;: &quot;동일 B50&quot;, &quot;sales&quot;: 311.0, &quot;stock&quot;: 636.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;4\&quot;(16mm)&quot;, &quot;sales&quot;: 31280.0, &quot;stock&quot;: 34610.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;*입고기간\n4\&quot;(9.5mm) : 단종예정 &quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;4\&quot;(9.5mm)&quot;, &quot;sales&quot;: 16870.0, &quot;stock&quot;: 9020.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;5\&quot;&quot;, &quot;sales&quot;: 106270.0, &quot;stock&quot;: 66770.0, &quot;orderQty&quot;: 50000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;절단석&quot;, &quot;name&quot;: &quot;storm 14\&quot;&quot;, &quot;sales&quot;: 250.0, &quot;stock&quot;: 2220.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;숫돌&quot;, &quot;name&quot;: &quot;#180/#300&quot;, &quot;sales&quot;: 5040.0, &quot;stock&quot;: 1777.0, &quot;orderQty&quot;: 5000.0, &quot;note&quot;: &quot;* 발주후 입고기간 확인필요 &quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직13-3.5m&quot;, &quot;sales&quot;: 8430.0, &quot;stock&quot;: 1792.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;* 입고기간\n베이직19-5.0m : 재고소진 후 단종 \n5.0m-22m/m 尺 : 재고소진 후 단종 \n베이직19-5.5m : 몽골대비(발주시 1,000EA) \n베이직25-7.5m : 몽골대비(발주시 2,000EA) \n&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직19-5.0m&quot;, &quot;sales&quot;: 3818.0, &quot;stock&quot;: 697.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직19-5.5m&quot;, &quot;sales&quot;: 12120.0, &quot;stock&quot;: 5577.0, &quot;orderQty&quot;: 8000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;베이직25-7.5m&quot;, &quot;sales&quot;: 18592.0, &quot;stock&quot;: 3073.0, &quot;orderQty&quot;: 17000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;롱라인30m&quot;, &quot;sales&quot;: 113.0, &quot;stock&quot;: 1967.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;롱라인50m&quot;, &quot;sales&quot;: 727.0, &quot;stock&quot;: 1335.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-19m/m 尺&quot;, &quot;sales&quot;: 5364.0, &quot;stock&quot;: 23.0, &quot;orderQty&quot;: 7000.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-19mm inch(인치)&quot;, &quot;sales&quot;: 3246.0, &quot;stock&quot;: 4686.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;5.0m-22m/m 尺&quot;, &quot;sales&quot;: 1210.0, &quot;stock&quot;: 4435.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;줄자 / / / 아우터&quot;, &quot;name&quot;: &quot;7.5m-尺&quot;, &quot;sales&quot;: 1546.0, &quot;stock&quot;: 5120.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J45&quot;, &quot;sales&quot;: 1961.0, &quot;stock&quot;: 8798.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;박팀장 직접 발주요청\n* 브리+하드케이스\nJ45S 아마존 주력(동일키 포장제품 각키변환) \nJ55 국내 MRO 납품 구이사 직접 발주요청&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J45S&quot;, &quot;sales&quot;: 13682.0, &quot;stock&quot;: 8179.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J55&quot;, &quot;sales&quot;: 23768.0, &quot;stock&quot;: 11503.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;녹방지&quot;, &quot;name&quot;: &quot;J55S&quot;, &quot;sales&quot;: 1719.0, &quot;stock&quot;: 4966.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Blue)&quot;, &quot;sales&quot;: 330.0, &quot;stock&quot;: 2831.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Red)&quot;, &quot;sales&quot;: 135.0, &quot;stock&quot;: 2736.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (Silver)&quot;, &quot;sales&quot;: 586.0, &quot;stock&quot;: 1825.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A41 (Silver)&quot;, &quot;sales&quot;: 507.0, &quot;stock&quot;: 0.0, &quot;orderQty&quot;: 800.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;알루미늄&quot;, &quot;name&quot;: &quot;A40 (동일)  Silver&quot;, &quot;sales&quot;: 390.0, &quot;stock&quot;: 250.0, &quot;orderQty&quot;: 500.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;G70&quot;, &quot;sales&quot;: 391.0, &quot;stock&quot;: 4179.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Green)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 2722.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;데이터 부족 \n추후 발주요청 예정&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Pink)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 1532.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Red)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 3050.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(White)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 3255.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}, {&quot;group&quot;: &quot;커플락&quot;, &quot;name&quot;: &quot;CL-3(Yellow)&quot;, &quot;sales&quot;: 0.0, &quot;stock&quot;: 1770.0, &quot;orderQty&quot;: 0.0, &quot;note&quot;: &quot;&quot;, &quot;longLead&quot;: false}]};
+const STORE=&#x27;zarker_china_orders_v14&#x27;;
+function makeDraft(){
+ return {title:&#x27;새 발주검토&#x27;,salesStart:&#x27;2025-09&#x27;,salesEnd:&#x27;2026-08&#x27;,avgMonths:12,forecastMonth:&#x27;27.08&#x27;,spareMonth:&#x27;27.08&#x27;,salesFile:&#x27;&#x27;,stockFile:&#x27;&#x27;,rows:PRODUCT_MASTER.map(r=&gt;({...r,sales:0,stock:0,orderQty:0}))};
+}
+let storedState=null;
+try{storedState=JSON.parse(localStorage.getItem(STORE)||&#x27;null&#x27;)}catch(e){storedState=null}
+let state=storedState&amp;&amp;Array.isArray(storedState.records)&amp;&amp;storedState.records.length?storedState:{records:[makeDraft()],current:0,savedRecords:[],savedCurrent:0};
+if(!Number.isInteger(state.current)||!state.records[state.current])state.current=0;
+state.savedRecords=Array.isArray(state.savedRecords)?state.savedRecords:[];
+ [...state.records,...state.savedRecords].forEach(rec=&gt;{if(!rec.salesStart)rec.salesStart=&#x27;2025-09&#x27;;if(!rec.salesEnd)rec.salesEnd=&#x27;2026-08&#x27;});
+function applyChinaProductRules(){
+ const brass=[&#x27;B20&#x27;,&#x27;B30&#x27;,&#x27;B40&#x27;,&#x27;B50&#x27;].map(name=&gt;({group:&#x27;부식방지 황동&#x27;,name,sales:0,stock:0,orderQty:0,note:&#x27;&#x27;,longLead:false}));
+ const masterAt=PRODUCT_MASTER.findIndex(x=&gt;x.group===&#x27;황동&#x27;||x.group===&#x27;부식방지 황동&#x27;);
+ for(let i=PRODUCT_MASTER.length-1;i&gt;=0;i--)if(PRODUCT_MASTER[i].group===&#x27;황동&#x27;||PRODUCT_MASTER[i].group===&#x27;부식방지 황동&#x27;)PRODUCT_MASTER.splice(i,1);
+ PRODUCT_MASTER.splice(masterAt&lt;0?PRODUCT_MASTER.length:masterAt,0,...brass.map(x=&gt;({...x})));
+ [...state.records,...state.savedRecords].forEach(rec=&gt;{
+   const rows=rec.rows||[];
+   const at=rows.findIndex(x=&gt;x.group===&#x27;황동&#x27;||x.group===&#x27;부식방지 황동&#x27;);
+   rec.rows=rows.filter(x=&gt;x.group!==&#x27;황동&#x27;&amp;&amp;x.group!==&#x27;부식방지 황동&#x27;);
+   rec.rows.splice(at&lt;0?rec.rows.length:at,0,...brass.map(x=&gt;({...x})));
+ });
+}
+applyChinaProductRules();
+let pendingSales=null,pendingStock=null,pendingSalesName=&#x27;&#x27;,pendingStockName=&#x27;&#x27;,selectedSalesFile=null,selectedStockFile=null;
+
+// Explicit element references: do not depend on browser-specific id-to-global behavior.
+const salesFile=document.getElementById(&#x27;salesFile&#x27;),salesName=document.getElementById(&#x27;salesName&#x27;);
+const stockFile=document.getElementById(&#x27;stockFile&#x27;),stockName=document.getElementById(&#x27;stockName&#x27;);
+const recordTitle=document.getElementById(&#x27;recordTitle&#x27;),salesStart=document.getElementById(&#x27;salesStart&#x27;),salesEnd=document.getElementById(&#x27;salesEnd&#x27;),avgMonths=document.getElementById(&#x27;avgMonths&#x27;);
+const forecastMonth=document.getElementById(&#x27;forecastMonth&#x27;),spareMonth=document.getElementById(&#x27;spareMonth&#x27;);
+const fileInfo=document.getElementById(&#x27;fileInfo&#x27;),kpiItems=document.getElementById(&#x27;kpiItems&#x27;);
+const kpiLong=document.getElementById(&#x27;kpiLong&#x27;),kpiOrder=document.getElementById(&#x27;kpiOrder&#x27;),kpiStock=document.getElementById(&#x27;kpiStock&#x27;);
+const forecastHead=document.getElementById(&#x27;forecastHead&#x27;),spareHead=document.getElementById(&#x27;spareHead&#x27;);
+const tbody=document.getElementById(&#x27;tbody&#x27;),recordView=document.getElementById(&#x27;recordView&#x27;);
+const savedHistory=document.getElementById(&#x27;savedHistory&#x27;),recordDetail=document.getElementById(&#x27;recordDetail&#x27;);
+
+function saveLocal(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){}}
+function fmt(n){return Math.round(Number(n)||0).toLocaleString(&#x27;ko-KR&#x27;)}
+function norm(v){return String(v??&#x27;&#x27;).toUpperCase().replace(/[^0-9A-Z가-힣*]/g,&#x27;&#x27;)}
+function numValue(v){
+ if(typeof v===&#x27;number&#x27;)return isFinite(v)?v:0;
+ const s=String(v??&#x27;&#x27;).replace(/,/g,&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;);
+ if(!s||s===&#x27;-&#x27;)return 0;
+ const n=Number(s);return isFinite(n)?n:0;
+}
+function isNumericCell(v){return typeof v===&#x27;number&#x27;||/^-?[\d,]+(?:\.\d+)?$/.test(String(v??&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;))}
+function parseYYMM(v){
+ const m=String(v||&#x27;&#x27;).match(/(\d{2,4})\D?(\d{1,2})/); if(!m)return null;
+ let y=Number(m[1]); if(y&lt;100)y+=2000; return {y,m:Number(m[2])};
+}
+function baseDateFromTitle(title){
+ const m=String(title||&#x27;&#x27;).match(/(\d{2,4})[.\-/](\d{1,2})(?:[.\-/](\d{1,2}))?/);
+ if(!m)return new Date();
+ let y=Number(m[1]);if(y&lt;100)y+=2000;return new Date(y,Number(m[2])-1,Number(m[3]||1));
+}
+function monthsTo(title,target){
+ const t=parseYYMM(target);if(!t)return 0;const b=baseDateFromTitle(title);
+ return Math.max(0,(t.y-b.getFullYear())*12+(t.m-(b.getMonth()+1)));
+}
+function calc(r,rec){
+ const avg=(Number(r.sales)||0)/(Number(rec.avgMonths)||1);
+ const fm=monthsTo(rec.title,rec.forecastMonth), sm=monthsTo(rec.title,rec.spareMonth);
+ const forecast=(Number(r.stock)||0)-avg*fm;
+ const spareStock=(Number(r.stock)||0)-avg*sm;
+ const spare=avg?spareStock/avg:0;
+ return {avg,forecast,spare};
+}
+function mapTarget(spec){
+ const s=norm(spec);
+ // Unpacked and starred dial products are one China-order item.
+ if(s.startsWith(&#x27;XD25&#x27;)) return &#x27;XD25*&#x27;;
+ if(s.startsWith(&#x27;XD35&#x27;)) return &#x27;XD35*&#x27;;
+ if(s.startsWith(&#x27;XD40&#x27;)&amp;&amp;!s.startsWith(&#x27;XD40L&#x27;)) return &#x27;XD40*&#x27;;
+ // Packaging consolidation for the same China-order product.
+ if(s.startsWith(&#x27;X50L&#x27;)) return &#x27;X50L&#x27;;
+ if(s.startsWith(&#x27;X50&#x27;)) return &#x27;X50&#x27;;
+ if(s.startsWith(&#x27;X70&#x27;)) return &#x27;X70&#x27;;
+ // New corrosion-resistant brass series: blister/alike labels consolidate by model.
+ if(s.startsWith(&#x27;B20&#x27;)) return &#x27;B20&#x27;;
+ if(s.startsWith(&#x27;B30&#x27;)) return &#x27;B30&#x27;;
+ if(s.startsWith(&#x27;B40&#x27;)) return &#x27;B40&#x27;;
+ if(s.startsWith(&#x27;B50&#x27;)) return &#x27;B50&#x27;;
+ // J-series: normal + alike consolidated per base model.
+ if(s.includes(&#x27;J45S&#x27;)) return &#x27;J45S&#x27;;
+ if(s.includes(&#x27;J45&#x27;)&amp;&amp;!s.includes(&#x27;J45S&#x27;)) return &#x27;J45&#x27;;
+ if(s.includes(&#x27;J55S&#x27;)) return &#x27;J55S&#x27;;
+ if(s.includes(&#x27;J55&#x27;)&amp;&amp;!s.includes(&#x27;J55S&#x27;)) return &#x27;J55&#x27;;
+ // S-series packaging is consolidated, while alike-key numbers stay separate.
+ if(s.startsWith(&#x27;S40&#x27;)) return &#x27;S40&#x27;;
+ if(s.startsWith(&#x27;S50&#x27;)) return &#x27;S50&#x27;;
+ const s40Alike=s.match(/^동일S40([4-8])$/);if(s40Alike)return &#x27;동일S40&#x27;+s40Alike[1];
+ const s50Alike=s.match(/^동일S50([1-4])$/);if(s50Alike)return &#x27;동일S50&#x27;+s50Alike[1];
+ // Otherwise prefer exact/normalized match against user&#x27;s master list.
+ let exact=PRODUCT_MASTER.find(p=&gt;norm(p.name)===s);
+ if(exact)return exact.name;
+ return String(spec||&#x27;&#x27;).trim();
+}
+function findHeader(rows,keywords){
+ for(let i=0;i&lt;Math.min(rows.length,40);i++){
+   const joined=rows[i].map(x=&gt;String(x||&#x27;&#x27;)).join(&#x27;|&#x27;);
+   if(keywords.some(k=&gt;joined.includes(k))) return i;
+ } return -1;
+}
+async function readExcel(file){
+ const buf=await file.arrayBuffer(); const book=XLSX.read(buf,{type:&#x27;array&#x27;});
+ let all=[]; book.SheetNames.forEach(n=&gt;{all.push(...XLSX.utils.sheet_to_json(book.Sheets[n],{header:1,defval:&#x27;&#x27;}))});
+ return all;
+}
+function salesMonthCount(start,end){const a=String(start||&#x27;&#x27;).split(&#x27;-&#x27;).map(Number),b=String(end||&#x27;&#x27;).split(&#x27;-&#x27;).map(Number);if(a.length&lt;2||b.length&lt;2||!a[0]||!a[1]||!b[0]||!b[1])return 0;return (b[0]-a[0])*12+b[1]-a[1]+1}
+function salesDate(v){if(v instanceof Date)return v;if(typeof v===&#x27;number&#x27;){const u=new Date(Math.round((v-25569)*86400*1000));return new Date(u.getUTCFullYear(),u.getUTCMonth(),u.getUTCDate(),12)}const s=String(v||&#x27;&#x27;).trim(),m=s.match(/(\d{2,4})[.\/-](\d{1,2})[.\/-](\d{1,2})/);if(!m)return null;let y=Number(m[1]);if(y&lt;100)y+=2000;return new Date(y,Number(m[2])-1,Number(m[3]),12)}
+function detectSales(rows,start,end){
+ const out={};
+ // Accept only a real column-header row containing product/spec AND quantity.
+ // Never guess from customer code, amount, slip number, or other numeric cells.
+ let hr=-1;
+ for(let i=0;i&lt;Math.min(rows.length,40);i++){
+   const hs=(rows[i]||[]).map(x=&gt;String(x||&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;));
+   const hasProduct=hs.some(h=&gt;/^(품명|제품명)$/.test(h));
+   const hasSpec=hs.some(h=&gt;/^(규격|제품규격)$/.test(h));
+   const hasQty=hs.some(h=&gt;/^(수량|판매량|출고수량)$/.test(h));
+   const hasDate=hs.some(h=&gt;/^(날짜|일자|매출일자|매출일|전표일자|전표일|작성일|출고일|거래일|판매일)$/.test(h));
+   if(hasProduct&amp;&amp;hasSpec&amp;&amp;hasQty&amp;&amp;hasDate){hr=i;break}
+ }
+ if(hr&lt;0)throw new Error(&#x27;매출 파일에서 날짜·품명·규격·수량 제목 행을 찾지 못했습니다.&#x27;);
+ const heads=(rows[hr]||[]).map(x=&gt;String(x||&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;));
+ const productCol=heads.findIndex(h=&gt;/^(품명|제품명)$/.test(h));
+ const specCol=heads.findIndex(h=&gt;/^(규격|제품규격)$/.test(h));
+ const qtyCol=heads.findIndex(h=&gt;/^(수량|판매량|출고수량)$/.test(h));
+ const dateCol=heads.findIndex(h=&gt;/^(날짜|일자|매출일자|매출일|전표일자|전표일|작성일|출고일|거래일|판매일)$/.test(h));
+ const count=salesMonthCount(start,end);if(count&lt;1)throw new Error(&#x27;판매 집계 시작월과 종료월을 확인해 주세요.&#x27;);const a=String(start).split(&#x27;-&#x27;).map(Number),b=String(end).split(&#x27;-&#x27;).map(Number),from=a[0]*12+a[1],to=b[0]*12+b[1];
+ for(let i=hr+1;i&lt;rows.length;i++){
+   const r=rows[i]; if(!r||!r.length)continue;
+   const d=salesDate(r[dateCol]);if(!d)continue;const mk=d.getFullYear()*12+d.getMonth()+1;if(mk&lt;from||mk&gt;to)continue;
+   let texts=r.map(x=&gt;String(x||&#x27;&#x27;));
+   const product=productCol&gt;=0?texts[productCol]:&#x27;&#x27;;
+   if(!product.includes(&#x27;자커&#x27;))continue;
+   const spec=specCol&gt;=0?texts[specCol]:&#x27;&#x27;;
+   if(!spec)continue;
+   if(/^B(?:20|30|40|50)/i.test(norm(spec))&amp;&amp;!texts.some(x=&gt;x.includes(&#x27;자커_황동(부식방지)&#x27;)))continue;
+   const qty=numValue(r[qtyCol]);
+   let target=mapTarget(spec);
+   out[target]=(out[target]||0)+qty;
+ } return out;
+}
+function detectStock(rows){
+ const out={};
+ // The inventory-sheet title is not a column header. A valid header must
+ // contain both a product/spec label and a stock/warehouse label.
+ let hr=-1;
+ for(let i=0;i&lt;Math.min(rows.length,40);i++){
+   const hs=(rows[i]||[]).map(x=&gt;String(x||&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;));
+   const hasProduct=hs.some(h=&gt;/제품|품명|규격|상품명/.test(h));
+   const hasStock=hs.some(h=&gt;/본사|포천|쿠팡|아마존|현재고|가용재고|재고수량|총재고/.test(h));
+   if(hasProduct&amp;&amp;hasStock){hr=i;break}
+ }
+ const heads=(rows[hr]||[]).map(x=&gt;String(x||&#x27;&#x27;));
+ const stockCols=[];
+ heads.forEach((h,i)=&gt;{if(/본사|포천|쿠팡|아마존/.test(h))stockCols.push(i)});
+ let currentCol=heads.findIndex(h=&gt;/현재고|가용재고|재고수량|총재고/.test(h.replace(/\s+/g,&#x27;&#x27;)));
+ for(let i=hr&gt;=0?hr+1:0;i&lt;rows.length;i++){
+   const r=rows[i];if(!r)continue;
+   let spec=&#x27;&#x27;,specIndex=-1;
+   for(let c=0;c&lt;r.length;c++){const x=r[c];if(typeof x===&#x27;string&#x27;&amp;&amp;x.trim()&amp;&amp;PRODUCT_MASTER.some(p=&gt;norm(p.name)===norm(x))){spec=x;specIndex=c;break}}
+   if(!spec){
+     for(let c=0;c&lt;r.length;c++){const x=r[c];if(typeof x===&#x27;string&#x27;&amp;&amp;/X50|X70|J45|J55|S40|S50|XD|XB|NO-|B\d|A40|G70/.test(x)){spec=x;specIndex=c;break}}
+   }
+   if(!spec)continue;
+   const rowTexts=r.map(x=&gt;String(x||&#x27;&#x27;));
+   if(/^B(?:20|30|40|50)/i.test(norm(spec))&amp;&amp;!rowTexts.some(x=&gt;x.includes(&#x27;자커_황동(부식방지)&#x27;)))continue;
+   let total=0;
+   const rightStockCols=stockCols.filter(c=&gt;c&gt;specIndex);
+   if(rightStockCols.length) rightStockCols.forEach(c=&gt;total+=numValue(r[c]));
+   else if(currentCol&gt;specIndex) total=numValue(r[currentCol]);
+   else {
+     // Product codes are always to the left of the product/spec cell and must
+     // never be counted as inventory, even when a misleading header points there.
+     let c=r.length-1;while(c&gt;specIndex&amp;&amp;!isNumericCell(r[c]))c--;
+     total=c&gt;specIndex?numValue(r[c]):0;
+   }
+   let target=mapTarget(spec); out[target]=(out[target]||0)+total;
+ } return out;
+}
+salesFile.addEventListener(&#x27;change&#x27;,async e=&gt;{
+ const f=e.target.files[0];if(!f)return;selectedSalesFile=f;salesName.textContent=f.name;pendingSalesName=f.name;
+ try{pendingSales=detectSales(await readExcel(f),salesStart.value,salesEnd.value);}catch(err){alert(&#x27;매출파일 읽기 실패: &#x27;+err.message)}
+});
+stockFile.addEventListener(&#x27;change&#x27;,async e=&gt;{
+ const f=e.target.files[0];if(!f)return;selectedStockFile=f;stockName.textContent=f.name;pendingStockName=f.name;
+ try{pendingStock=detectStock(await readExcel(f));}catch(err){alert(&#x27;재고파일 읽기 실패: &#x27;+err.message)}
+});
+async function applyFiles(){
+ const btn=document.getElementById(&#x27;applyBtn&#x27;);
+ if(!selectedSalesFile&amp;&amp;!selectedStockFile&amp;&amp;!pendingSales&amp;&amp;!pendingStock){alert(&#x27;매출 또는 재고 파일을 선택해 주세요.&#x27;);return}
+ btn.disabled=true;btn.textContent=&#x27;파일 읽는 중...&#x27;;
+ try{
+   // Read the selected files again here so a quick click cannot beat the
+   // asynchronous change event, especially for legacy .xls stock files.
+   if(selectedSalesFile)pendingSales=detectSales(await readExcel(selectedSalesFile),salesStart.value,salesEnd.value);
+   if(selectedStockFile)pendingStock=detectStock(await readExcel(selectedStockFile));
+   let rec=state.records[state.current];
+   const matchedStock=pendingStock?rec.rows.filter(r=&gt;pendingStock[r.name]!==undefined).length:0;
+   rec.rows.forEach(r=&gt;{
+     if(pendingSales&amp;&amp;pendingSales[r.name]!==undefined)r.sales=pendingSales[r.name];
+     if(pendingStock)r.stock=pendingStock[r.name]!==undefined?pendingStock[r.name]:0;
+   });
+   if(pendingSalesName)rec.salesFile=pendingSalesName;if(pendingStockName)rec.stockFile=pendingStockName;
+   rec.salesStart=salesStart.value;rec.salesEnd=salesEnd.value;rec.avgMonths=salesMonthCount(rec.salesStart,rec.salesEnd);
+   saveLocal();render();alert(&#x27;파일 적용 완료&#x27;+(pendingStock?&#x27;\n재고 매칭 품목: &#x27;+matchedStock+&#x27;개\n현재고 합계: &#x27;+fmt(rec.rows.reduce((s,r)=&gt;s+(Number(r.stock)||0),0)):&#x27;&#x27;));
+ }catch(err){alert(&#x27;파일 적용 실패: &#x27;+(err&amp;&amp;err.message?err.message:err));}
+ finally{btn.disabled=false;btn.textContent=&#x27;두 파일 적용&#x27;;}
+}
+function saveRecord(){
+ const cur=state.records[state.current]||INITIAL;
+ const newRec={
+   title:document.getElementById(&#x27;recordTitle&#x27;).value.trim()||&#x27;새 발주검토&#x27;,
+   salesStart:document.getElementById(&#x27;salesStart&#x27;).value,
+   salesEnd:document.getElementById(&#x27;salesEnd&#x27;).value,
+   avgMonths:salesMonthCount(document.getElementById(&#x27;salesStart&#x27;).value,document.getElementById(&#x27;salesEnd&#x27;).value)||1,
+   forecastMonth:document.getElementById(&#x27;forecastMonth&#x27;).value.trim()||&#x27;27.08&#x27;,
+   spareMonth:document.getElementById(&#x27;spareMonth&#x27;).value.trim()||&#x27;27.08&#x27;,
+   salesFile:cur.salesFile||pendingSalesName||&#x27;&#x27;,
+   stockFile:cur.stockFile||pendingStockName||&#x27;&#x27;,
+   savedAt:new Date().toISOString(),
+   rows:JSON.parse(JSON.stringify(cur.rows))
+ };
+ state.savedRecords.push(newRec);state.savedCurrent=state.savedRecords.length-1;saveLocal();renderRecordView();
+ alert(&#x27;중국발주 기록에 저장했습니다.&#x27;);
+ if(parent&amp;&amp;parent.showChinaPanel)parent.showChinaPanel(&#x27;records&#x27;);else setChinaView(&#x27;records&#x27;);
+}
+function startFresh(){
+ if(!confirm(&#x27;현재 작성 중인 값과 잘못 남은 현재고를 초기화하고 새로 시작할까요?\n저장된 중국발주 기록은 삭제되지 않습니다.&#x27;))return;
+ state.records=[makeDraft()];state.current=0;pendingSales=null;pendingStock=null;pendingSalesName=&#x27;&#x27;;pendingStockName=&#x27;&#x27;;selectedSalesFile=null;selectedStockFile=null;
+ salesFile.value=&#x27;&#x27;;stockFile.value=&#x27;&#x27;;salesName.textContent=&#x27;파일을 선택해 주세요.&#x27;;stockName.textContent=&#x27;파일을 선택해 주세요.&#x27;;
+ saveLocal();render();alert(&#x27;초기화했습니다. 매출 파일과 재고 파일을 새로 선택해 주세요.&#x27;);
+}
+function editRow(i,k,v){let r=state.records[state.current].rows[i];r[k]=(k===&#x27;note&#x27;?v:Number(v)||0);saveLocal();renderKpi()}
+function groupProductionBadge(group){
+ if(group===&#x27;스테인리스&#x27;)return &#x27;&lt;span class=&quot;badge&quot;&gt;장기생산 6개월&lt;/span&gt;&#x27;;
+ if(group===&#x27;BIKE&#x27;||group===&#x27;녹방지&#x27;)return &#x27;&lt;span class=&quot;badge&quot;&gt;생산기간 3개월&lt;/span&gt;&#x27;;
+ return &#x27;&#x27;;
+}
+function renderHistory(){
+ const box=document.getElementById(&#x27;savedHistory&#x27;);if(!box)return;
+ if(!state.savedRecords.length){box.innerHTML=&#x27;&lt;div class=&quot;emptyState&quot;&gt;저장된 중국발주 기록이 없습니다.&lt;/div&gt;&#x27;;return}
+ if(!state.savedRecords[state.savedCurrent])state.savedCurrent=state.savedRecords.length-1;
+ const options=state.savedRecords.map((r,i)=&gt;({r,i})).reverse().map(x=&gt;`&lt;option value=&quot;${x.i}&quot; ${x.i===state.savedCurrent?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${escapeHtml(x.r.title)}${x.r.savedAt?&#x27; · &#x27;+new Date(x.r.savedAt).toLocaleDateString(&#x27;ko-KR&#x27;):&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;);
+ box.innerHTML=`&lt;div class=&quot;recordPicker&quot;&gt;&lt;select id=&quot;savedSelect&quot; aria-label=&quot;발주기록 선택&quot; onchange=&quot;selectSaved(Number(this.value))&quot;&gt;${options}&lt;/select&gt;&lt;button class=&quot;btn green&quot; onclick=&quot;exportSavedExcel()&quot;&gt;선택 기록 엑셀 다운로드&lt;/button&gt;&lt;button class=&quot;btn red&quot; onclick=&quot;deleteSaved()&quot;&gt;선택 기록 삭제&lt;/button&gt;&lt;span class=&quot;recordCount&quot;&gt;저장 기록 ${state.savedRecords.length}건&lt;/span&gt;&lt;/div&gt;`;
+}
+function selectSaved(i){state.savedCurrent=i;saveLocal();renderRecordView()}
+function exportSavedExcel(){
+ const rec=state.savedRecords[state.savedCurrent];if(!rec)return alert(&#x27;다운로드할 발주기록을 선택해 주세요.&#x27;);
+ if(typeof XLSX===&#x27;undefined&#x27;)return alert(&#x27;엑셀 기능을 불러오지 못했습니다. 인터넷 연결 후 다시 열어 주세요.&#x27;);
+ const data=[
+   [&#x27;ZARKER 중국발주 기록&#x27;],
+   [&#x27;기록 제목&#x27;,rec.title],[&#x27;판매 집계 기간&#x27;,(rec.salesStart||&#x27;-&#x27;)+&#x27; ~ &#x27;+(rec.salesEnd||&#x27;-&#x27;)],[&#x27;매출 파일&#x27;,rec.salesFile||&#x27;미적용&#x27;],[&#x27;재고 파일&#x27;,rec.stockFile||&#x27;미적용&#x27;],
+   [&#x27;저장 일시&#x27;,rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;],
+   [],[&#x27;구분&#x27;,&#x27;제품/규격&#x27;,&#x27;판매량&#x27;,&#x27;월평균 판매량&#x27;,&#x27;현재고&#x27;,&#x27;예상재고&#x27;,&#x27;여유개월&#x27;,&#x27;발주수량&#x27;,&#x27;비고&#x27;]
+ ];
+ rec.rows.forEach(r=&gt;{const c=calc(r,rec);data.push([r.group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,Number(r.orderQty)||0,r.note||&#x27;&#x27;])});
+ const ws=XLSX.utils.aoa_to_sheet(data);
+ ws[&#x27;!merges&#x27;]=[XLSX.utils.decode_range(&#x27;A1:I1&#x27;)];
+ ws[&#x27;!cols&#x27;]=[{wch:16},{wch:28},{wch:13},{wch:16},{wch:13},{wch:13},{wch:12},{wch:13},{wch:38}];
+ ws[&#x27;!autofilter&#x27;]={ref:&#x27;A8:I&#x27;+data.length};
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,&#x27;중국발주 기록&#x27;);
+ const safe=String(rec.title||&#x27;중국발주기록&#x27;).replace(/[^0-9A-Za-z가-힣._-]+/g,&#x27;_&#x27;);
+ XLSX.writeFile(wb,safe+&#x27;.xlsx&#x27;);
+}
+function deleteSaved(){
+ const i=state.savedCurrent,rec=state.savedRecords[i];if(!rec)return;
+ if(!confirm(rec.title+&#x27; 기록을 삭제할까요?\n삭제한 기록은 복구할 수 없습니다.&#x27;))return;
+ state.savedRecords.splice(i,1);
+ state.savedCurrent=Math.max(0,Math.min(i,state.savedRecords.length-1));
+ saveLocal();renderRecordView();alert(&#x27;선택한 발주기록을 삭제했습니다.&#x27;);
+}
+function escapeHtml(v){return String(v||&#x27;&#x27;).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}
+function renderRecordView(){
+ renderHistory();const detail=document.getElementById(&#x27;recordDetail&#x27;);if(!detail)return;
+ const rec=state.savedRecords[state.savedCurrent];if(!rec){detail.innerHTML=&#x27;&#x27;;return}
+ let rows=&#x27;&#x27;,lastGroup=&#x27;&#x27;;
+ rec.rows.forEach(r=&gt;{const c=calc(r,rec),show=r.group!==lastGroup;if(show)lastGroup=r.group;rows+=`&lt;tr&gt;&lt;td class=&quot;group&quot;&gt;${show?r.group+groupProductionBadge(r.group):&#x27;&#x27;}&lt;/td&gt;&lt;td class=&quot;name&quot;&gt;${r.name}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(r.sales)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(c.avg)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;&lt;span class=&quot;stockValue&quot;&gt;${fmt(r.stock)}&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;num ${c.forecast&lt;0?&#x27;neg&#x27;:&#x27;good&#x27;}&quot;&gt;${fmt(c.forecast)}&lt;/td&gt;&lt;td class=&quot;num ${c.spare&lt;0?&#x27;neg&#x27;:&#x27;&#x27;}&quot;&gt;${c.avg?Math.round(c.spare):&#x27;-&#x27;}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${fmt(r.orderQty)}&lt;/td&gt;&lt;td&gt;${String(r.note||&#x27;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;).replace(/\n/g,&#x27;&lt;br&gt;&#x27;)}&lt;/td&gt;&lt;/tr&gt;`});
+ detail.innerHTML=`&lt;div class=&quot;card&quot;&gt;&lt;h2&gt;${rec.title}&lt;/h2&gt;&lt;div class=&quot;recordMeta&quot;&gt;판매 집계: ${rec.salesStart||&#x27;-&#x27;} ~ ${rec.salesEnd||&#x27;-&#x27;} (${rec.avgMonths||&#x27;-&#x27;}개월) · 매출파일: ${rec.salesFile||&#x27;미적용&#x27;} · 재고파일: ${rec.stockFile||&#x27;미적용&#x27;} · 저장: ${rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card tableWrap recordTableWrap&quot;&gt;&lt;table class=&quot;recordTable&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;구분&lt;/th&gt;&lt;th&gt;제품/규격&lt;/th&gt;&lt;th&gt;판매량&lt;/th&gt;&lt;th&gt;월평균&lt;/th&gt;&lt;th&gt;현재고&lt;/th&gt;&lt;th&gt;예상재고&lt;/th&gt;&lt;th&gt;여유개월&lt;/th&gt;&lt;th&gt;발주수량&lt;/th&gt;&lt;th&gt;비고&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;${rows}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;`;
+}
+function setChinaView(mode){
+ document.querySelectorAll(&#x27;.orderOnly&#x27;).forEach(el=&gt;el.classList.toggle(&#x27;hidden&#x27;,mode!==&#x27;order&#x27;));
+ document.getElementById(&#x27;recordView&#x27;).classList.toggle(&#x27;hidden&#x27;,mode!==&#x27;records&#x27;);
+ if(mode===&#x27;records&#x27;)renderRecordView();
+}
+window.setChinaView=setChinaView;
+function renderKpi(){
+ const rec=state.records[state.current];kpiItems.textContent=rec.rows.length;
+ kpiLong.textContent=rec.rows.filter(x=&gt;x.longLead).length;
+ kpiOrder.textContent=fmt(rec.rows.reduce((s,x)=&gt;s+(Number(x.orderQty)||0),0));
+ kpiStock.textContent=fmt(rec.rows.reduce((s,x)=&gt;s+(Number(x.stock)||0),0));
+}
+function render(){
+ const rec=state.records[state.current];if(!rec)return;
+ recordTitle.value=rec.title||&#x27;새 발주검토&#x27;;
+ salesStart.value=rec.salesStart||&#x27;2025-09&#x27;;salesEnd.value=rec.salesEnd||&#x27;2026-08&#x27;;rec.avgMonths=salesMonthCount(salesStart.value,salesEnd.value)||rec.avgMonths||1;avgMonths.value=rec.avgMonths;forecastMonth.value=rec.forecastMonth;spareMonth.value=rec.spareMonth;
+ forecastHead.textContent=rec.forecastMonth+&#x27; 예상재고&#x27;;
+ spareHead.textContent=rec.spareMonth+&#x27; 기준 여유개월수&#x27;;
+ fileInfo.textContent=&#x27;판매 집계: &#x27;+salesStart.value+&#x27; ~ &#x27;+salesEnd.value+&#x27; (&#x27;+rec.avgMonths+&#x27;개월) · 매출파일: &#x27;+(rec.salesFile||&#x27;미적용&#x27;)+&#x27; · 재고파일: &#x27;+(rec.stockFile||&#x27;미적용&#x27;)+&#x27; · 기준일은 기록 제목의 날짜를 사용합니다.&#x27;;
+ let h=&#x27;&#x27;,lastGroup=&#x27;&#x27;;
+ rec.rows.forEach((r,i)=&gt;{
+   const c=calc(r,rec);
+   const showGroup=r.group!==lastGroup;
+   if(showGroup)lastGroup=r.group;
+   h+=`&lt;tr class=&quot;${r.longLead?&#x27;long&#x27;:&#x27;&#x27;}&quot;&gt;
+    &lt;td class=&quot;group&quot;&gt;${showGroup?r.group+groupProductionBadge(r.group):&#x27;&#x27;}&lt;/td&gt;
+    &lt;td class=&quot;name&quot;&gt;${r.name}&lt;/td&gt;
+    &lt;td class=&quot;num&quot;&gt;${fmt(r.sales)}&lt;/td&gt;
+    &lt;td class=&quot;num&quot;&gt;${fmt(c.avg)}&lt;/td&gt;
+    &lt;td class=&quot;num&quot;&gt;&lt;span class=&quot;stockValue&quot;&gt;${fmt(r.stock)}&lt;/span&gt;&lt;/td&gt;
+    &lt;td class=&quot;num ${c.forecast&lt;0?&#x27;neg&#x27;:&#x27;good&#x27;}&quot;&gt;${fmt(c.forecast)}&lt;/td&gt;
+    &lt;td class=&quot;num ${c.spare&lt;0?&#x27;neg&#x27;:&#x27;&#x27;}&quot;&gt;${c.avg?Math.round(c.spare):&#x27;-&#x27;}&lt;/td&gt;
+    &lt;td&gt;&lt;input class=&quot;order&quot; value=&quot;${r.orderQty||0}&quot; onchange=&quot;editRow(${i},&#x27;orderQty&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;textarea class=&quot;note&quot; onchange=&quot;editRow(${i},&#x27;note&#x27;,this.value)&quot;&gt;${String(r.note||&#x27;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}&lt;/textarea&gt;&lt;/td&gt;
+   &lt;/tr&gt;`;
+ });
+ tbody.innerHTML=h;renderKpi();
+}
+function updateSalesPeriod(){const rec=state.records[state.current],n=salesMonthCount(salesStart.value,salesEnd.value);if(n&lt;1){alert(&#x27;판매 집계 시작월은 종료월보다 앞서야 합니다.&#x27;);render();return}rec.salesStart=salesStart.value;rec.salesEnd=salesEnd.value;rec.avgMonths=n;pendingSales=null;avgMonths.value=n;saveLocal();render()}
+salesStart.addEventListener(&#x27;change&#x27;,updateSalesPeriod);salesEnd.addEventListener(&#x27;change&#x27;,updateSalesPeriod);
+forecastMonth.addEventListener(&#x27;change&#x27;,()=&gt;{state.records[state.current].forecastMonth=forecastMonth.value;saveLocal();render()});
+spareMonth.addEventListener(&#x27;change&#x27;,()=&gt;{state.records[state.current].spareMonth=spareMonth.value;saveLocal();render()});
+setChinaView(&#x27;order&#x27;);
+render();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+   <section id="amazonWorkspace" class="amazonWorkspace">
+    <div id="amazonWriteTools" class="amazonTools">
+     <div class="amazonToolRow">
+      <div class="amazonField wide"><label>월보고 제목</label><input id="amazonReportTitle" value="26.08 아마존 월보고"></div>
+      <div class="amazonField"><label>기준연도 (전년도와 비교)</label><input id="amazonBaseYear" type="number" min="2001" max="2100" value="2026"></div>
+      <div class="amazonField"><label>누적 시작월</label><select id="amazonStartMonth"><option value="1" selected>1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select></div>
+      <div class="amazonField"><label>누적 종료월</label><select id="amazonEndMonth"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7" selected>7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select></div>
+      <div class="amazonField"><label>해당 월 비교</label><select id="amazonCompareMonth"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8" selected>8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select></div>
+      <div class="amazonField wide"><label>아마존 매출 Excel</label><input id="amazonFile" type="file" accept=".xls,.xlsx"></div>
+      <button id="amazonAnalyzeBtn" class="amazonAction" type="button">Excel 분석 적용</button>
+      <button id="amazonSaveBtn" class="amazonAction gray" type="button">월보고 기록 저장</button>
+     </div>
+     <div id="amazonWriteStatus" class="amazonStatus">누적 기간과 해당 월을 선택한 뒤 Excel 분석 적용을 눌러주세요.</div>
+     <div id="amazonViewSwitch" class="amazonViewSwitch hidden"><button id="amazonShowCumulative" class="amazonAction activeView" type="button">기간 누적 비교 보기</button><button id="amazonShowMonthly" class="amazonAction light" type="button">해당 월 비교 보기</button></div>
+    </div>
+    <div id="amazonRecordTools" class="amazonTools hidden"><div id="amazonRecordPicker" class="amazonToolRow"></div></div>
+   <iframe id="amazonFrame" class="frame" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ko&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;&lt;title&gt;아마존 2025 대비 2026 매출 보고서&lt;/title&gt;&lt;style&gt;
+:root{--ink:#172033;--muted:#667085;--bg:#f4f6f9;--card:#fff;--line:#e6eaf0;--navy:#14284a;--blue:#2d5bd1;--amber:#d38713;--red:#dc3d42;--green:#12815a;--sky:#7fa4f5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,&quot;Noto Sans KR&quot;,&quot;Malgun Gothic&quot;,Arial,sans-serif;line-height:1.5}.wrap{max-width:1190px;margin:auto;padding:30px 22px 60px}.hero{padding:36px 39px;border-radius:18px;color:#fff;background:linear-gradient(135deg,#112544,#315fce);box-shadow:0 15px 35px rgba(20,40,74,.18);animation:rise .7s ease both}.eyebrow{font-size:12px;letter-spacing:.12em;opacity:.75}.hero h1{font-size:32px;line-height:1.25;margin:7px 0}.hero p{margin:0;opacity:.88}.basis{font-size:12px;margin-top:18px;opacity:.76}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:17px 0}.card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 2px 11px rgba(16,24,40,.055);animation:rise .65s ease both}.label{font-size:13px;color:var(--muted)}.value{font-size:26px;font-weight:750;letter-spacing:-.035em;margin-top:5px}.delta{font-size:13px;margin-top:4px}.bad{color:var(--red);font-weight:700}.good{color:var(--green);font-weight:700}.section{margin-top:24px}.section h2{font-size:21px;margin:0 0 12px}.note{font-size:13px;color:var(--muted);margin:-7px 0 14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.wide{display:grid;grid-template-columns:1.38fr .82fr;gap:16px}.chart-title{font-size:16px;font-weight:700;margin-bottom:12px}.chart svg{display:block;width:100%;height:auto}.axis{fill:#647084;font-size:11px}.gridline{stroke:#e9edf3;stroke-width:1}.anim-line{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1.25s .25s ease forwards}.anim-dot{opacity:0;animation:fade .35s 1.1s ease forwards}.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}.insights{margin:0;padding:0;list-style:none}.insights li{padding:12px 0;border-bottom:1px solid var(--line)}.insights li:last-child{border:0}.insights strong{display:block}.insights span{font-size:13px;color:var(--muted)}.compare{margin:16px 0}.compare-head{display:grid;grid-template-columns:minmax(95px,1fr) repeat(3,minmax(100px,auto));gap:13px;align-items:center;font-size:13px;margin-bottom:7px}.compare-head strong{font-size:14px}.amt25{color:var(--amber);font-weight:700;font-size:15px}.amt26{color:var(--blue);font-weight:700;font-size:15px}.amtdiff{font-weight:700;font-size:15px}.compare-bars{display:grid;gap:5px}.compare-track{height:11px;background:#edf0f4;border-radius:6px;overflow:hidden}.bar{height:100%;border-radius:7px;transform-origin:left;animation:grow .85s ease both}.bar25{background:var(--amber)}.bar26{background:var(--blue)}.barrow{display:grid;grid-template-columns:110px 1fr 90px;gap:9px;align-items:center;margin:11px 0;font-size:13px}.track{height:14px;background:#edf0f4;border-radius:8px;overflow:hidden}.red{background:var(--red)}.green{background:var(--green)}.donutbox{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:center}.donutseg{animation:donut .9s ease both}.drow{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;margin:8px 0;font-size:13px}.dot{width:9px;height:9px;border-radius:2px}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--muted);font-weight:600;padding:9px 8px;border-bottom:1px solid var(--line)}td{padding:10px 8px;border-bottom:1px solid #edf0f4}.num{text-align:right;font-variant-numeric:tabular-nums}.table-wrap{overflow-x:auto}.callout{border-left:4px solid var(--green);background:#effaf5;padding:15px 17px;border-radius:0 10px 10px 0;font-size:14px;margin-top:15px}.footer{font-size:12px;color:var(--muted);text-align:right;margin-top:22px}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes draw{to{stroke-dashoffset:0}}@keyframes fade{to{opacity:1}}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes donut{from{opacity:0;stroke-dashoffset:520}to{opacity:1}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}@media(max-width:850px){.kpis{grid-template-columns:1fr 1fr}.grid2,.wide{grid-template-columns:1fr}.donutbox{grid-template-columns:1fr}.wrap{padding:16px 11px 40px}.hero{padding:26px 22px}.hero h1{font-size:27px}.compare-head{grid-template-columns:1fr 1fr}.barrow{grid-template-columns:90px 1fr 75px}}@media print{body{background:#fff}.wrap{max-width:none;padding:0}.card,.hero{box-shadow:none}.section{break-inside:avoid}*{animation:none!important}}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;main class=&quot;wrap&quot;&gt;&lt;header class=&quot;hero&quot;&gt;&lt;div class=&quot;eyebrow&quot;&gt;AMAZON SALES PERFORMANCE&lt;/div&gt;&lt;h1&gt;아마존 매출 추이 및 2025·2026 비교&lt;/h1&gt;&lt;p&gt;2021년부터 전체 흐름을 확인하고, 2025년과 2026년은 동일한 1~7월 기간으로 비교했습니다.&lt;/p&gt;&lt;div class=&quot;basis&quot;&gt;금액 단위: 원화 · 2021~2025년 연간 총매출 · 2026년 1~7월 누계 · 원자료 최종일 2026-07-31&lt;/div&gt;&lt;/header&gt;
+&lt;section class=&quot;kpis&quot; id=&quot;kpis&quot;&gt;&lt;/section&gt;
+&lt;section class=&quot;section wide&quot;&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;연도별 아마존 매출 추이&lt;/div&gt;&lt;div class=&quot;chart&quot; id=&quot;history&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;핵심 요약&lt;/div&gt;&lt;ul class=&quot;insights&quot; id=&quot;insights&quot;&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;section class=&quot;section grid2&quot;&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;월별 매출: 2025 vs 2026&lt;/div&gt;&lt;div class=&quot;chart&quot; id=&quot;monthly&quot;&gt;&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;&lt;span&gt;&lt;i style=&quot;background:#d38713&quot;&gt;&lt;/i&gt;2025년&lt;/span&gt;&lt;span&gt;&lt;i style=&quot;background:#2d5bd1&quot;&gt;&lt;/i&gt;2026년&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;2026년 1~7월 제품군 매출 비중&lt;/div&gt;&lt;div class=&quot;donutbox&quot;&gt;&lt;div id=&quot;donut&quot;&gt;&lt;/div&gt;&lt;div id=&quot;donutLegend&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;section class=&quot;section&quot;&gt;&lt;h2&gt;제품군별 매출 비교&lt;/h2&gt;&lt;p class=&quot;note&quot;&gt;제품 매출 기준이며 운임·매출할인·불량은 제외했습니다.&lt;/p&gt;&lt;div class=&quot;card&quot;&gt;&lt;div id=&quot;catcompare&quot;&gt;&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;&lt;span&gt;&lt;i style=&quot;background:#d38713&quot;&gt;&lt;/i&gt;2025년 1~7월&lt;/span&gt;&lt;span&gt;&lt;i style=&quot;background:#2d5bd1&quot;&gt;&lt;/i&gt;2026년 1~7월&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;section class=&quot;section&quot;&gt;&lt;h2&gt;월별·제품군별 증감&lt;/h2&gt;&lt;p class=&quot;note&quot;&gt;증가는 초록색, 감소는 빨간색으로 표시했습니다.&lt;/p&gt;&lt;div class=&quot;grid2&quot;&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;월별 증감액&lt;/div&gt;&lt;div id=&quot;monthbars&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;chart-title&quot;&gt;제품군별 증감액&lt;/div&gt;&lt;div id=&quot;catbars&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;section class=&quot;section grid2&quot;&gt;&lt;div&gt;&lt;h2&gt;성장 제품 상세&lt;/h2&gt;&lt;div class=&quot;card table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;제품군&lt;/th&gt;&lt;th&gt;규격&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;2025&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;2026&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;증가액&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;증가율&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody id=&quot;growth&quot;&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;h2&gt;부진 제품 상세&lt;/h2&gt;&lt;div class=&quot;card table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;제품군&lt;/th&gt;&lt;th&gt;규격&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;2025&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;2026&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;감소액&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;감소율&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody id=&quot;declines&quot;&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;section class=&quot;section&quot;&gt;&lt;div class=&quot;callout&quot; id=&quot;callout&quot;&gt;&lt;/div&gt;&lt;/section&gt;&lt;div class=&quot;footer&quot;&gt;자료: 아마존 (21.1.31-26.7.31).xls · 작성 2026-08-28&lt;/div&gt;&lt;/main&gt;&lt;script&gt;
+const D={&quot;history&quot;: [{&quot;year&quot;: 2021, &quot;value&quot;: 558542331, &quot;delta&quot;: null, &quot;partial&quot;: false}, {&quot;year&quot;: 2022, &quot;value&quot;: 933604979, &quot;delta&quot;: 0.6715026367446446, &quot;partial&quot;: false}, {&quot;year&quot;: 2023, &quot;value&quot;: 707460366, &quot;delta&quot;: -0.2422272996468242, &quot;partial&quot;: false}, {&quot;year&quot;: 2024, &quot;value&quot;: 584069524, &quot;delta&quot;: -0.17441378758453308, &quot;partial&quot;: false}, {&quot;year&quot;: 2025, &quot;value&quot;: 522564138, &quot;delta&quot;: -0.10530490544820825, &quot;partial&quot;: false}, {&quot;year&quot;: 2026, &quot;value&quot;: 328471027, &quot;delta&quot;: null, &quot;partial&quot;: true}], &quot;months&quot;: [{&quot;m&quot;: 1, &quot;y25&quot;: 41877837, &quot;y26&quot;: 40498344, &quot;diff&quot;: -1379493}, {&quot;m&quot;: 2, &quot;y25&quot;: 55778349, &quot;y26&quot;: 35784024, &quot;diff&quot;: -19994325}, {&quot;m&quot;: 3, &quot;y25&quot;: 56917966, &quot;y26&quot;: 44112831, &quot;diff&quot;: -12805135}, {&quot;m&quot;: 4, &quot;y25&quot;: 43642874, &quot;y26&quot;: 45472494, &quot;diff&quot;: 1829620}, {&quot;m&quot;: 5, &quot;y25&quot;: 44236820, &quot;y26&quot;: 59254323, &quot;diff&quot;: 15017503}, {&quot;m&quot;: 6, &quot;y25&quot;: 33817249, &quot;y26&quot;: 55234558, &quot;diff&quot;: 21417309}, {&quot;m&quot;: 7, &quot;y25&quot;: 34838860, &quot;y26&quot;: 48114453, &quot;diff&quot;: 13275593}], &quot;categories&quot;: [{&quot;name&quot;: &quot;부식방지&quot;, &quot;y25&quot;: 153315950, &quot;y26&quot;: 238976076, &quot;diff&quot;: 85660126, &quot;rate&quot;: 0.5587163370803885}, {&quot;name&quot;: &quot;다이얼&quot;, &quot;y25&quot;: 144677619, &quot;y26&quot;: 73257589, &quot;diff&quot;: -71420030, &quot;rate&quot;: -0.49364947041325036}, {&quot;name&quot;: &quot;BIKE&quot;, &quot;y25&quot;: 3649434, &quot;y26&quot;: 3904964, &quot;diff&quot;: 255530, &quot;rate&quot;: 0.07001907693083376}, {&quot;name&quot;: &quot;버튼&quot;, &quot;y25&quot;: 4716209, &quot;y26&quot;: 3713400, &quot;diff&quot;: -1002809, &quot;rate&quot;: -0.2126303138813399}, {&quot;name&quot;: &quot;스테인리스&quot;, &quot;y25&quot;: 3694903, &quot;y26&quot;: 3677495, &quot;diff&quot;: -17408, &quot;rate&quot;: -0.004711355074815238}], &quot;growth&quot;: [{&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;J45S(하드케이스)&quot;, &quot;y25&quot;: 133897395, &quot;y26&quot;: 200803169, &quot;diff&quot;: 66905774, &quot;rate&quot;: 0.49967942990974534}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;J55S(하드케이스)&quot;, &quot;y25&quot;: 14871740, &quot;y26&quot;: 30121265, &quot;diff&quot;: 15249525, &quot;rate&quot;: 1.0254028782106195}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;J45(하드케이스)&quot;, &quot;y25&quot;: 702208, &quot;y26&quot;: 3056038, &quot;diff&quot;: 2353830, &quot;rate&quot;: 3.3520409907036095}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50(하드케이스)&quot;, &quot;y25&quot;: 2070637, &quot;y26&quot;: 3936311, &quot;diff&quot;: 1865674, &quot;rate&quot;: 0.9010145187205676}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;A40 (Blue)&quot;, &quot;y25&quot;: 406994, &quot;y26&quot;: 1853325, &quot;diff&quot;: 1446331, &quot;rate&quot;: 3.553691209207015}, {&quot;cat&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S50(하드케이스)&quot;, &quot;y25&quot;: 428732, &quot;y26&quot;: 1489834, &quot;diff&quot;: 1061102, &quot;rate&quot;: 2.474977375143446}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;G70&quot;, &quot;y25&quot;: 915311, &quot;y26&quot;: 1923955, &quot;diff&quot;: 1008644, &quot;rate&quot;: 1.1019686205016654}, {&quot;cat&quot;: &quot;BIKE&quot;, &quot;name&quot;: &quot;NO-90&quot;, &quot;y25&quot;: 3583478, &quot;y26&quot;: 3904964, &quot;diff&quot;: 321486, &quot;rate&quot;: 0.08971340133802963}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD25(GREEN)&quot;, &quot;y25&quot;: 40568, &quot;y26&quot;: 53171, &quot;diff&quot;: 12603, &quot;rate&quot;: 0.3106635772037074}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;A40 (Silver)&quot;, &quot;y25&quot;: 184898, &quot;y26&quot;: 189873, &quot;diff&quot;: 4975, &quot;rate&quot;: 0.026906726952157456}], &quot;declines&quot;: [{&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GREEN)&quot;, &quot;y25&quot;: 51627586, &quot;y26&quot;: 17690925, &quot;diff&quot;: -33936661, &quot;rate&quot;: -0.6573358088057807}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(PINK)&quot;, &quot;y25&quot;: 40612502, &quot;y26&quot;: 28785547, &quot;diff&quot;: -11826955, &quot;rate&quot;: -0.29121463632060884}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(GRAY)&quot;, &quot;y25&quot;: 15948361, &quot;y26&quot;: 6623511, &quot;diff&quot;: -9324850, &quot;rate&quot;: -0.5846901759999037}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(BLUE)&quot;, &quot;y25&quot;: 16449163, &quot;y26&quot;: 7997951, &quot;diff&quot;: -8451212, &quot;rate&quot;: -0.5137776311171578}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD35(YELLOW)&quot;, &quot;y25&quot;: 8804100, &quot;y26&quot;: 4254911, &quot;diff&quot;: -4549189, &quot;rate&quot;: -0.5167125543780738}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;X50L(하드케이스)&quot;, &quot;y25&quot;: 4139050, &quot;y26&quot;: 2434569, &quot;diff&quot;: -1704481, &quot;rate&quot;: -0.4118048827629529}, {&quot;cat&quot;: &quot;스테인리스&quot;, &quot;name&quot;: &quot;S40(하드케이스)&quot;, &quot;y25&quot;: 3266171, &quot;y26&quot;: 2187661, &quot;diff&quot;: -1078510, &quot;rate&quot;: -0.3302062261896269}, {&quot;cat&quot;: &quot;부식방지&quot;, &quot;name&quot;: &quot;J55(하드케이스)&quot;, &quot;y25&quot;: 1339126, &quot;y26&quot;: 312252, &quot;diff&quot;: -1026874, &quot;rate&quot;: -0.7668240329886806}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(GREEN)&quot;, &quot;y25&quot;: 1509539, &quot;y26&quot;: 489031, &quot;diff&quot;: -1020508, &quot;rate&quot;: -0.6760395061008693}, {&quot;cat&quot;: &quot;버튼&quot;, &quot;name&quot;: &quot;브리스터XB35(컬러)&quot;, &quot;y25&quot;: 4716209, &quot;y26&quot;: 3713400, &quot;diff&quot;: -1002809, &quot;rate&quot;: -0.2126303138813399}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(BLUE)&quot;, &quot;y25&quot;: 944568, &quot;y26&quot;: 226049, &quot;diff&quot;: -718519, &quot;rate&quot;: -0.7606853079926486}, {&quot;cat&quot;: &quot;다이얼&quot;, &quot;name&quot;: &quot;브리스터XD40(PINK)&quot;, &quot;y25&quot;: 1061190, &quot;y26&quot;: 440230, &quot;diff&quot;: -620960, &quot;rate&quot;: -0.5851544021334539}], &quot;total25&quot;: 311109955, &quot;total26&quot;: 328471027, &quot;diff&quot;: 17361072, &quot;rate&quot;: 0.05580365308464663};const won=n=&gt;new Intl.NumberFormat(&#x27;ko-KR&#x27;).format(Math.round(n))+&#x27;원&#x27;;const sh=n=&gt;{let a=Math.abs(n);return(n&lt;0?&#x27;-&#x27;:&#x27;&#x27;)+(a&gt;=1e8?(a/1e8).toFixed(2)+&#x27;억&#x27;:a&gt;=1e4?(a/1e4).toFixed(0)+&#x27;만&#x27;:a.toLocaleString(&#x27;ko-KR&#x27;))};const pct=n=&gt;n==null?&#x27;신규&#x27;:(n*100).toFixed(1)+&#x27;%&#x27;;
+const bestCat=[...D.categories].sort((a,b)=&gt;b.diff-a.diff)[0],worstCat=[...D.categories].sort((a,b)=&gt;a.diff-b.diff)[0];document.getElementById(&#x27;kpis&#x27;).innerHTML=`&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;label&quot;&gt;2025년 1~7월&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;${sh(D.total25)}원&lt;/div&gt;&lt;div class=&quot;delta&quot;&gt;동일 기간 비교 기준&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;label&quot;&gt;2026년 1~7월&lt;/div&gt;&lt;div class=&quot;value&quot;&gt;${sh(D.total26)}원&lt;/div&gt;&lt;div class=&quot;delta good&quot;&gt;전년 동기 대비 ${pct(D.rate)}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;label&quot;&gt;매출 증감액&lt;/div&gt;&lt;div class=&quot;value good&quot;&gt;+${sh(D.diff)}원&lt;/div&gt;&lt;div class=&quot;delta&quot;&gt;전체 매출 기준&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;label&quot;&gt;최대 성장 제품군&lt;/div&gt;&lt;div class=&quot;value good&quot;&gt;${bestCat.name}&lt;/div&gt;&lt;div class=&quot;delta&quot;&gt;+${sh(bestCat.diff)}원&lt;/div&gt;&lt;/div&gt;`;
+function line(el,arr,keys,label,colors,aria){const W=680,H=300,p={l:62,r:20,t:22,b:42},vals=arr.flatMap(x=&gt;keys.map(k=&gt;x[k])),max=Math.max(...vals)*1.12,x=i=&gt;p.l+i*(W-p.l-p.r)/(arr.length-1),y=v=&gt;H-p.b-v/max*(H-p.t-p.b);let s=`&lt;svg viewBox=&quot;0 0 ${W} ${H}&quot; role=&quot;img&quot; aria-label=&quot;${aria}&quot;&gt;`;for(let i=0;i&lt;=4;i++){let v=max*i/4,Y=y(v);s+=`&lt;line class=&quot;gridline&quot; x1=&quot;${p.l}&quot; y1=&quot;${Y}&quot; x2=&quot;${W-p.r}&quot; y2=&quot;${Y}&quot;/&gt;&lt;text class=&quot;axis&quot; x=&quot;${p.l-8}&quot; y=&quot;${Y+4}&quot; text-anchor=&quot;end&quot;&gt;${sh(v)}&lt;/text&gt;`}arr.forEach((d,i)=&gt;s+=`&lt;text x=&quot;${x(i)}&quot; y=&quot;${H-14}&quot; text-anchor=&quot;middle&quot; font-size=&quot;12&quot; font-weight=&quot;700&quot; fill=&quot;#243652&quot;&gt;${label(d)}&lt;/text&gt;`);keys.forEach((k,j)=&gt;{s+=`&lt;polyline class=&quot;anim-line&quot; fill=&quot;none&quot; stroke=&quot;${colors[j]}&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot; points=&quot;${arr.map((d,i)=&gt;x(i)+&#x27;,&#x27;+y(d[k])).join(&#x27; &#x27;)}&quot;/&gt;`;arr.forEach((d,i)=&gt;s+=`&lt;circle class=&quot;anim-dot&quot; cx=&quot;${x(i)}&quot; cy=&quot;${y(d[k])}&quot; r=&quot;4&quot; fill=&quot;${colors[j]}&quot;&gt;&lt;title&gt;${label(d)} ${won(d[k])}&lt;/title&gt;&lt;/circle&gt;`)});document.getElementById(el).innerHTML=s+&#x27;&lt;/svg&gt;&#x27;}
+line(&#x27;history&#x27;,D.history,[&#x27;value&#x27;],d=&gt;d.year+(d.partial?&#x27;*&#x27;:&#x27;&#x27;),[&#x27;#2d5bd1&#x27;],&#x27;연도별 아마존 매출&#x27;);line(&#x27;monthly&#x27;,D.months,[&#x27;y25&#x27;,&#x27;y26&#x27;],d=&gt;d.m+&#x27;월&#x27;,[&#x27;#d38713&#x27;,&#x27;#2d5bd1&#x27;],&#x27;2025년과 2026년 월별 매출 비교&#x27;);
+const peak=D.history.reduce((a,b)=&gt;a.value&gt;b.value?a:b),mBest=[...D.months].sort((a,b)=&gt;b.diff-a.diff)[0],mWorst=[...D.months].sort((a,b)=&gt;a.diff-b.diff)[0];document.getElementById(&#x27;insights&#x27;).innerHTML=`&lt;li&gt;&lt;strong&gt;2022년 최고 매출&lt;/strong&gt;&lt;span&gt;${won(peak.value)}을 기록했습니다.&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;strong class=&quot;good&quot;&gt;2026년 1~7월 +${pct(D.rate)}&lt;/strong&gt;&lt;span&gt;동일 기간 기준 ${won(D.diff)} 증가했습니다.&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;strong class=&quot;good&quot;&gt;최대 성장: ${bestCat.name}&lt;/strong&gt;&lt;span&gt;${won(bestCat.diff)} 증가했습니다.&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;strong class=&quot;bad&quot;&gt;최대 감소: ${worstCat.name}&lt;/strong&gt;&lt;span&gt;${won(worstCat.diff)} 감소했습니다.&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;strong&gt;2026년*&lt;/strong&gt;&lt;span&gt;1~7월 누계이므로 연간 증감률은 표시하지 않았습니다.&lt;/span&gt;&lt;/li&gt;`;
+const catMax=Math.max(...D.categories.flatMap(x=&gt;[x.y25,x.y26]));document.getElementById(&#x27;catcompare&#x27;).innerHTML=D.categories.map((x,i)=&gt;`&lt;div class=&quot;compare&quot;&gt;&lt;div class=&quot;compare-head&quot;&gt;&lt;strong&gt;${x.name}&lt;/strong&gt;&lt;span class=&quot;amt25&quot;&gt;2025 ${sh(x.y25)}원&lt;/span&gt;&lt;span class=&quot;amt26&quot;&gt;2026 ${sh(x.y26)}원&lt;/span&gt;&lt;span class=&quot;amtdiff ${x.diff&lt;0?&#x27;bad&#x27;:&#x27;good&#x27;}&quot;&gt;${x.diff&lt;0?&#x27;&#x27;:&#x27;+&#x27;}${sh(x.diff)}원&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;compare-bars&quot;&gt;&lt;div class=&quot;compare-track&quot;&gt;&lt;div class=&quot;bar bar25&quot; style=&quot;width:${x.y25/catMax*100}%;animation-delay:${i*.05}s&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;compare-track&quot;&gt;&lt;div class=&quot;bar bar26&quot; style=&quot;width:${x.y26/catMax*100}%;animation-delay:${i*.05+.1}s&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`).join(&#x27;&#x27;);
+function bars(arr,el){let mx=Math.max(...arr.map(x=&gt;Math.abs(x.diff)));document.getElementById(el).innerHTML=arr.map((x,i)=&gt;`&lt;div class=&quot;barrow&quot;&gt;&lt;div&gt;${x.label}&lt;/div&gt;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;bar ${x.diff&lt;0?&#x27;red&#x27;:&#x27;green&#x27;}&quot; style=&quot;width:${Math.max(2,Math.abs(x.diff)/mx*100)}%;animation-delay:${i*.06}s&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;num ${x.diff&lt;0?&#x27;bad&#x27;:&#x27;good&#x27;}&quot;&gt;${x.diff&lt;0?&#x27;&#x27;:&#x27;+&#x27;}${sh(x.diff)}&lt;/div&gt;&lt;/div&gt;`).join(&#x27;&#x27;)};bars(D.months.map(x=&gt;({label:x.m+&#x27;월&#x27;,diff:x.diff})),&#x27;monthbars&#x27;);bars(D.categories.map(x=&gt;({label:x.name,diff:x.diff})),&#x27;catbars&#x27;);
+const pal=[&#x27;#2d5bd1&#x27;,&#x27;#d38713&#x27;,&#x27;#12815a&#x27;,&#x27;#7256b8&#x27;,&#x27;#7fa4f5&#x27;];function donut(){let a=D.categories,tot=a.reduce((s,x)=&gt;s+x.y26,0),r=72,c=2*Math.PI*r,off=0,s=`&lt;svg viewBox=&quot;0 0 220 220&quot; role=&quot;img&quot; aria-label=&quot;2026년 제품군 매출 비중&quot;&gt;&lt;circle cx=&quot;110&quot; cy=&quot;110&quot; r=&quot;${r}&quot; fill=&quot;none&quot; stroke=&quot;#edf0f4&quot; stroke-width=&quot;34&quot;/&gt;`;a.forEach((d,i)=&gt;{let len=d.y26/tot*c;s+=`&lt;circle class=&quot;donutseg&quot; cx=&quot;110&quot; cy=&quot;110&quot; r=&quot;${r}&quot; fill=&quot;none&quot; stroke=&quot;${pal[i%pal.length]}&quot; stroke-width=&quot;34&quot; stroke-dasharray=&quot;${len} ${c-len}&quot; stroke-dashoffset=&quot;${-off}&quot; transform=&quot;rotate(-90 110 110)&quot;&gt;&lt;title&gt;${d.name} ${pct(d.y26/tot)}&lt;/title&gt;&lt;/circle&gt;`;off+=len});s+=`&lt;text x=&quot;110&quot; y=&quot;103&quot; text-anchor=&quot;middle&quot; font-size=&quot;12&quot; fill=&quot;#667085&quot;&gt;제품 매출&lt;/text&gt;&lt;text x=&quot;110&quot; y=&quot;126&quot; text-anchor=&quot;middle&quot; font-size=&quot;19&quot; font-weight=&quot;700&quot; fill=&quot;#172033&quot;&gt;${sh(tot)}원&lt;/text&gt;&lt;/svg&gt;`;document.getElementById(&#x27;donut&#x27;).innerHTML=s;document.getElementById(&#x27;donutLegend&#x27;).innerHTML=a.map((d,i)=&gt;`&lt;div class=&quot;drow&quot;&gt;&lt;span class=&quot;dot&quot; style=&quot;background:${pal[i%pal.length]}&quot;&gt;&lt;/span&gt;&lt;span&gt;${d.name}&lt;/span&gt;&lt;span&gt;${pct(d.y26/tot)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}donut();
+function rows(arr){return arr.map(x=&gt;`&lt;tr&gt;&lt;td&gt;${x.cat}&lt;/td&gt;&lt;td&gt;${x.name}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${won(x.y25)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${won(x.y26)}&lt;/td&gt;&lt;td class=&quot;num ${x.diff&lt;0?&#x27;bad&#x27;:&#x27;good&#x27;}&quot;&gt;${x.diff&lt;0?&#x27;&#x27;:&#x27;+&#x27;}${won(x.diff)}&lt;/td&gt;&lt;td class=&quot;num ${x.diff&lt;0?&#x27;bad&#x27;:&#x27;good&#x27;}&quot;&gt;${pct(x.rate)}&lt;/td&gt;&lt;/tr&gt;`).join(&#x27;&#x27;)}document.getElementById(&#x27;growth&#x27;).innerHTML=rows(D.growth);document.getElementById(&#x27;declines&#x27;).innerHTML=rows(D.declines);
+document.getElementById(&#x27;callout&#x27;).innerHTML=`&lt;strong&gt;데이터 결론&lt;/strong&gt;&lt;br&gt;2026년 1~7월 전체 매출은 전년 동기보다 &lt;b&gt;${won(D.diff)}(+${pct(D.rate)})&lt;/b&gt; 증가했습니다. 부식방지 제품군의 성장, 특히 J45S와 J55S 증가가 다이얼 제품군의 감소를 상쇄하며 전체 매출을 플러스로 전환했습니다.`;
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+   </section>
+ </main>
+</div>
+
+<script>
+const AMAZON_PASSWORD='0011',AMAZON_STORE='zarker_amazon_monthly_reports_v1';
+const amazonFrame=document.getElementById('amazonFrame'),AMAZON_TEMPLATE=amazonFrame.srcdoc;
+let amazonCurrentData=null,amazonCurrentFile='',amazonCurrentView='cumulative';
+let amazonRecords=(()=>{try{return JSON.parse(localStorage.getItem(AMAZON_STORE)||'[]')}catch(e){return[]}})();
+if(!Array.isArray(amazonRecords))amazonRecords=[];
+function clearFrames(){document.querySelectorAll('.frame').forEach(f=>f.classList.remove('active'));document.getElementById('amazonWorkspace').classList.remove('active')}
+function amazonUnlock(){
+ try{if(sessionStorage.getItem('zarker_amazon_unlocked')==='1')return true}catch(e){}
+ const pw=prompt('아마존 월보고 비밀번호를 입력하세요.');
+ if(pw!==AMAZON_PASSWORD){if(pw!==null)alert('비밀번호가 올바르지 않습니다.');return false}
+ try{sessionStorage.setItem('zarker_amazon_unlocked','1')}catch(e){}return true;
+}
+function showMain(id,btn){
+ if(id==='amazon'&&!amazonUnlock())return;
+ document.querySelectorAll('.topnav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+ document.getElementById('workSide').classList.toggle('active',id==='work');
+ document.getElementById('chinaSide').classList.toggle('active',id==='china');
+ document.getElementById('amazonSide').classList.toggle('active',id==='amazon');
+ clearFrames();
+ if(id==='work'){document.getElementById('manageFrame').classList.add('active');document.querySelectorAll('#workSide .sidebtn').forEach((b,i)=>b.classList.toggle('active',i===0));}
+ if(id==='china'){document.getElementById('chinaFrame').classList.add('active');showChinaPanel('order');}
+ if(id==='amazon')showAmazonPanel('write');
+}
+function showWorkSub(id,btn){
+ document.querySelectorAll('#workSide .sidebtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+ clearFrames();document.getElementById(id==='manage'?'manageFrame':'scheduleFrame').classList.add('active');
+}
+function showChinaSub(mode,btn){
+ document.querySelectorAll('#chinaSide .sidebtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');showChinaPanel(mode);
+}
+function showChinaPanel(mode){
+ clearFrames();const frame=document.getElementById('chinaFrame');frame.classList.add('active');
+ document.getElementById('workSide').classList.remove('active');document.getElementById('amazonSide').classList.remove('active');document.getElementById('chinaSide').classList.add('active');
+ document.querySelectorAll('#chinaSide .sidebtn').forEach((b,i)=>b.classList.toggle('active',(mode==='order'?0:1)===i));
+ if(frame.contentWindow&&frame.contentWindow.setChinaView)frame.contentWindow.setChinaView(mode);
+}
+function showAmazonSub(mode,btn){
+ if(!amazonUnlock())return;document.querySelectorAll('#amazonSide .sidebtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');showAmazonPanel(mode);
+}
+function showAmazonPanel(mode){
+ clearFrames();document.getElementById('workSide').classList.remove('active');document.getElementById('chinaSide').classList.remove('active');document.getElementById('amazonSide').classList.add('active');
+ document.getElementById('amazonWorkspace').classList.add('active');
+ document.querySelectorAll('#amazonSide .sidebtn').forEach((b,i)=>b.classList.toggle('active',(mode==='write'?0:1)===i));
+ document.getElementById('amazonWriteTools').classList.toggle('hidden',mode!=='write');document.getElementById('amazonRecordTools').classList.toggle('hidden',mode!=='records');
+ if(mode==='records')renderAmazonRecords();
+}
+function amazonNum(v){if(typeof v==='number')return isFinite(v)?v:0;const n=Number(String(v??'').replace(/,/g,'').trim());return isFinite(n)?n:0}
+function amazonDate(v){if(v instanceof Date)return new Date(v.getFullYear(),v.getMonth(),v.getDate(),12);if(typeof v==='number'){const u=new Date(Math.round((v-25569)*86400*1000));return new Date(u.getUTCFullYear(),u.getUTCMonth(),u.getUTCDate(),12)}const s=String(v||'').trim(),m=s.match(/(\d{4})[.\/-](\d{1,2})[.\/-](\d{1,2})/);if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),12);const d=new Date(s);return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate(),12)}
+function amazonCategory(product,spec){
+ const p=(String(product||'')+' '+String(spec||'')).toUpperCase();
+ if(p.includes('부식방지')||/J45|J55|G70|A40|A41/.test(p))return '부식방지';
+ if(p.includes('다이얼')||/XD\d|X50|X70/.test(p))return '다이얼';
+ if(p.includes('스테인리스')||/S40|S50/.test(p))return '스테인리스';
+ if(p.includes('BIKE')||/NO-?\d|C\s?\d/.test(p))return 'BIKE';
+ if(p.includes('버튼')||/XB\d/.test(p))return '버튼';return '';
+}
+async function readAmazonExcel(file){const b=await file.arrayBuffer(),wb=XLSX.read(b,{type:'array',cellDates:true});let rows=[];wb.SheetNames.forEach(n=>rows.push(...XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''})));return rows}
+function analyzeAmazonRows(rows,startMonth,endMonth,baseYear){
+ let hr=-1,cols={};
+ for(let i=0;i<Math.min(60,rows.length);i++){
+  const h=(rows[i]||[]).map(x=>String(x||'').replace(/\s+/g,'').toLowerCase());
+  const date=h.findIndex(x=>/^(날짜|일자|주문일|구매일|purchase-date|orderdate)$/.test(x));
+  const product=h.findIndex(x=>/^(품명|제품명|상품명|product|productname)$/.test(x));
+  const spec=h.findIndex(x=>/^(규격|제품규격|sku|seller-sku|모델명)$/.test(x));
+  let amount=h.findIndex(x=>/^(금액|매출액|상품매출|판매금액|product-sales)$/.test(x));if(amount<0)amount=h.findIndex(x=>/^(합계금액|합계)$/.test(x));
+  if(date>=0&&(product>=0||spec>=0)&&amount>=0){hr=i;cols={date,product,spec,amount};break}
+ }
+ if(hr<0)throw new Error('날짜·품명(또는 규격)·금액 제목 행을 찾지 못했습니다.');
+ const items=[];
+ for(let i=hr+1;i<rows.length;i++){const r=rows[i]||[],date=amazonDate(r[cols.date]);if(!date)continue;const product=cols.product>=0?String(r[cols.product]||''):'',spec=cols.spec>=0?String(r[cols.spec]||''):product,cat=amazonCategory(product,spec),amount=amazonNum(r[cols.amount]);if(!cat||!spec||!amount)continue;items.push({date,year:date.getFullYear(),month:date.getMonth()+1,cat,spec,amount})}
+ if(!items.length)throw new Error('분석 가능한 아마존 제품 매출이 없습니다.');
+ startMonth=Number(startMonth)||1;endMonth=Number(endMonth)||startMonth;if(startMonth>endMonth)throw new Error('누적 시작월은 종료월보다 앞서야 합니다.');
+ const years=[...new Set(items.map(x=>x.year))].sort((a,b)=>a-b),current=Number(baseYear)||years[years.length-1],previous=current-1,maxMonth=endMonth,inRange=x=>x.month>=startMonth&&x.month<=endMonth;
+ if(!years.includes(current))throw new Error('선택한 기준연도 '+current+'년 데이터가 없습니다.');
+ if(!years.includes(previous))throw new Error('전년 '+previous+'년 데이터가 없어 비교할 수 없습니다.');
+ if(!items.some(x=>x.year===previous&&inRange(x))||!items.some(x=>x.year===current&&inRange(x)))throw new Error(previous+'년과 '+current+'년의 선택 기간 데이터가 모두 필요합니다.');
+ const sum=a=>a.reduce((s,x)=>s+x.amount,0),history=years.map(y=>({year:y,value:sum(items.filter(x=>x.year===y)),delta:null,partial:y===current}));history.forEach((x,i)=>{if(i&&x.year!==current)x.delta=history[i-1].value?x.value/history[i-1].value-1:null});
+ const months=Array.from({length:endMonth-startMonth+1},(_,i)=>startMonth+i).map(m=>{const y25=sum(items.filter(x=>x.year===previous&&x.month===m)),y26=sum(items.filter(x=>x.year===current&&x.month===m));return{m,y25,y26,diff:y26-y25}});
+ const cats=[...new Set(items.map(x=>x.cat))].map(name=>{const y25=sum(items.filter(x=>x.year===previous&&inRange(x)&&x.cat===name)),y26=sum(items.filter(x=>x.year===current&&inRange(x)&&x.cat===name));return{name,y25,y26,diff:y26-y25,rate:y25?y26/y25-1:null}}).filter(x=>x.y25||x.y26).sort((a,b)=>b.y26-a.y26);
+ const keys=[...new Set(items.filter(x=>inRange(x)&&(x.year===previous||x.year===current)).map(x=>x.cat+'|||'+x.spec))],details=keys.map(k=>{const [cat,name]=k.split('|||'),y25=sum(items.filter(x=>x.year===previous&&inRange(x)&&x.cat===cat&&x.spec===name)),y26=sum(items.filter(x=>x.year===current&&inRange(x)&&x.cat===cat&&x.spec===name));return{cat,name,y25,y26,diff:y26-y25,rate:y25?y26/y25-1:null}});
+ const growth=details.filter(x=>x.diff>0).sort((a,b)=>b.diff-a.diff).slice(0,12),declines=details.filter(x=>x.diff<0).sort((a,b)=>a.diff-b.diff).slice(0,12),total25=sum(items.filter(x=>x.year===previous&&inRange(x))),total26=sum(items.filter(x=>x.year===current&&inRange(x)));
+ return{history,months,categories:cats,growth,declines,total25,total26,diff:total26-total25,rate:total25?total26/total25-1:null,_meta:{previous,current,startMonth,endMonth,maxMonth,periodText:startMonth===endMonth?startMonth+'월':startMonth+'~'+endMonth+'월',lastDate:new Date(Math.max(...items.filter(x=>x.year===current).map(x=>x.date.getTime()))).toISOString().slice(0,10)}};
+}
+function renderAmazonData(data,title,fileName){
+ const m=data._meta,period=m.periodText||(m.maxMonth+'월'),peak=[...data.history].sort((a,b)=>b.value-a.value)[0];let html=AMAZON_TEMPLATE.replace(/2025/g,String(m.previous)).replace(/2026/g,String(m.current)).replace(/1~7월/g,period).replace(/1~7/g,period).replace('2022년 최고 매출',peak.year+'년 최고 매출');
+ html=html.replace(/const D=.*?;const won=/s,'const D='+JSON.stringify(data)+';const won=');
+ html=html.replace('x=i=>p.l+i*(W-p.l-p.r)/(arr.length-1)','x=i=>p.l+(arr.length===1?(W-p.l-p.r)/2:i*(W-p.l-p.r)/(arr.length-1))');
+ html=html.replace(/<h1>.*?<\/h1>/,'<h1>'+escapeOuter(title)+'</h1>').replace(/자료:.*?· 작성 \d{4}-\d{2}-\d{2}/,'자료: '+escapeOuter(fileName)+' · 작성 '+new Date().toISOString().slice(0,10));amazonFrame.srcdoc=html;
+}
+function amazonBundleData(bundle,kind){if(bundle&&bundle.cumulative)return bundle[kind]||bundle.cumulative;return bundle}
+function showAmazonResult(kind){if(!amazonCurrentData)return;amazonCurrentView=kind;renderAmazonData(amazonBundleData(amazonCurrentData,kind),document.getElementById('amazonReportTitle').value.trim()||'아마존 월보고',amazonCurrentFile);document.getElementById('amazonShowCumulative').className='amazonAction '+(kind==='cumulative'?'activeView':'light');document.getElementById('amazonShowMonthly').className='amazonAction '+(kind==='monthly'?'activeView':'light')}
+function escapeOuter(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function saveAmazonRecords(){try{localStorage.setItem(AMAZON_STORE,JSON.stringify(amazonRecords))}catch(e){alert('월보고 기록 저장 공간을 사용할 수 없습니다.')}}
+function renderAmazonRecords(){
+ const box=document.getElementById('amazonRecordPicker');if(!amazonRecords.length){box.innerHTML='<div class="amazonEmpty">저장된 아마존 월보고가 없습니다.</div>';return}
+ const options=amazonRecords.map((r,i)=>({r,i})).reverse().map(x=>'<option value="'+x.i+'">'+escapeOuter(x.r.title)+' · '+new Date(x.r.savedAt).toLocaleDateString('ko-KR')+'</option>').join('');
+ box.innerHTML='<div class="amazonField"><label>저장된 월보고 선택</label><select id="amazonRecordSelect">'+options+'</select></div><button id="amazonOpenCumulative" class="amazonAction" type="button">기간 누적 보기</button><button id="amazonOpenMonthly" class="amazonAction light" type="button">해당 월 보기</button><button id="amazonDeleteRecord" class="amazonAction red" type="button">선택 기록 삭제</button><span class="amazonRecordMeta">저장 기록 '+amazonRecords.length+'건</span>';
+ const sel=document.getElementById('amazonRecordSelect'),open=k=>{const r=amazonRecords[Number(sel.value)];if(r)renderAmazonData(amazonBundleData(r.data,k),r.title,r.fileName)};document.getElementById('amazonOpenCumulative').addEventListener('click',()=>open('cumulative'));document.getElementById('amazonOpenMonthly').addEventListener('click',()=>open('monthly'));document.getElementById('amazonDeleteRecord').addEventListener('click',()=>{const i=Number(sel.value),r=amazonRecords[i];if(!r||!confirm(r.title+' 기록을 삭제할까요?'))return;amazonRecords.splice(i,1);saveAmazonRecords();renderAmazonRecords();alert('선택한 월보고를 삭제했습니다.')});
+ const latest=amazonRecords[amazonRecords.length-1];if(latest)renderAmazonData(amazonBundleData(latest.data,'cumulative'),latest.title,latest.fileName);
+}
+document.getElementById('amazonAnalyzeBtn').addEventListener('click',async()=>{const f=document.getElementById('amazonFile').files[0],status=document.getElementById('amazonWriteStatus'),year=Number(document.getElementById('amazonBaseYear').value),start=Number(document.getElementById('amazonStartMonth').value),end=Number(document.getElementById('amazonEndMonth').value),month=Number(document.getElementById('amazonCompareMonth').value);if(!f)return alert('아마존 매출 Excel을 선택해 주세요.');if(typeof XLSX==='undefined')return alert('Excel 기능을 불러오지 못했습니다.');if(!year)return alert('기준연도를 입력해 주세요.');status.textContent='Excel 분석 중...';try{const rows=await readAmazonExcel(f);amazonCurrentData={cumulative:analyzeAmazonRows(rows,start,end,year),monthly:analyzeAmazonRows(rows,month,month,year)};amazonCurrentFile=f.name;document.getElementById('amazonViewSwitch').classList.remove('hidden');showAmazonResult('cumulative');const m=amazonCurrentData.cumulative._meta;status.textContent=m.previous+'년 대비 '+m.current+'년 '+m.periodText+' 누적 비교와 '+month+'월 단독 비교를 적용했습니다.'}catch(e){status.textContent='분석 실패';alert('아마존 월보고 분석 실패: '+e.message)}});
+document.getElementById('amazonShowCumulative').addEventListener('click',()=>showAmazonResult('cumulative'));
+document.getElementById('amazonShowMonthly').addEventListener('click',()=>showAmazonResult('monthly'));
+document.getElementById('amazonSaveBtn').addEventListener('click',()=>{if(!amazonCurrentData)return alert('먼저 Excel 분석 적용을 해주세요.');const title=document.getElementById('amazonReportTitle').value.trim()||'아마존 월보고';amazonRecords.push({title,fileName:amazonCurrentFile,savedAt:new Date().toISOString(),data:amazonCurrentData});saveAmazonRecords();document.getElementById('amazonWriteStatus').textContent='월보고 기록에 저장했습니다.';alert('아마존 월보고 기록에 저장했습니다.')});
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
+</script>
+</body>
+</html>
