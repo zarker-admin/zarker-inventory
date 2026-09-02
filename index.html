@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#051e4b">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./manifest.webmanifest">
 <title>ZARKER 업무관리</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -14,8 +14,15 @@
 body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;color:#051e4b}
 .topline{height:5px;background:linear-gradient(90deg,#41afc8,#1487b4,#1c7096)}
 .topbar{height:58px;background:#051e4b;color:#fff;display:flex;align-items:center;padding:0 18px;gap:26px;box-shadow:0 3px 14px rgba(5,30,75,.18)}
-.logo{width:138px;background:#fff;border-radius:2px;padding:4px 9px;display:flex;align-items:center;justify-content:center}
-.logo img{width:112px;height:auto}
+.logo{width:138px;background:transparent;padding:2px 4px;display:flex;align-items:center;justify-content:flex-start}
+.logo img{width:118px;height:auto;filter:brightness(0) invert(1);opacity:.96}
+.cloudAccount{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#d7e8ef;white-space:nowrap}
+.cloudAccount button{border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;padding:7px 10px;font-weight:800;cursor:pointer}
+.cloudDot{width:8px;height:8px;border-radius:50%;background:#32b4b4;box-shadow:0 0 0 3px rgba(50,180,180,.16)}
+.loginGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#051e4b 0%,#0b315c 58%,#1c7096 100%);display:flex;align-items:center;justify-content:center;padding:20px}
+.loginGate.hidden{display:none}.loginCard{width:min(420px,100%);background:#fff;border-radius:20px;padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.32)}
+.loginBrand{color:#1c7096;font-size:28px;font-weight:950;letter-spacing:.5px}.loginTitle{font-size:21px;font-weight:900;margin:18px 0 6px}.loginSub{font-size:13px;color:#667085;line-height:1.55;margin-bottom:18px}
+.loginCard input{width:100%;height:46px;border:1px solid #b9ced8;border-radius:10px;padding:10px 12px;margin:6px 0;font-size:15px}.loginButton{width:100%;height:46px;border:0;border-radius:10px;background:linear-gradient(135deg,#41afc8,#1487b4);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-top:10px}.loginStatus{min-height:20px;color:#c82121;font-size:12px;margin-top:10px}.cloudLoading{color:#1c7096}
 .topnav{display:flex;height:100%;gap:4px}
 .topnav button{border:0;background:transparent;color:#c6bfb8;font-weight:800;padding:0 22px;border-bottom:3px solid transparent;cursor:pointer}
 .topnav button.active{color:#fff;border-bottom-color:#32b4b4}
@@ -31,7 +38,8 @@ body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;co
 .amazonWorkspace{display:none;height:100%;overflow:hidden}.amazonWorkspace.active{display:flex;flex-direction:column}.amazonWorkspace.active #amazonFrame{display:block;width:100%;flex:1;min-height:0;height:auto}.amazonTools{background:#fff;border-bottom:1px solid #d6e6ed;padding:16px 20px}.amazonTools.hidden{display:none}.amazonToolRow{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.amazonField label{display:block;font-size:12px;font-weight:800;color:#667085;margin-bottom:5px}.amazonField input,.amazonField select{height:39px;border:1px solid #b9ced8;border-radius:8px;padding:8px 10px;min-width:150px;color:#051e4b;background:#fff}.amazonField.wide input{min-width:220px}.amazonAction{border:0;border-radius:9px;padding:11px 15px;font-weight:900;cursor:pointer;color:#fff;background:linear-gradient(135deg,#41afc8,#1487b4)}.amazonAction.gray{background:#1c7096}.amazonAction.red{background:#c82121}.amazonAction.light{background:#e7f2f6;color:#1c7096}.amazonAction.activeView{background:#32b4b4;color:#051e4b}.amazonStatus{font-size:12px;color:#667085;margin-top:9px}.amazonViewSwitch{display:flex;gap:8px;align-items:center;margin-top:10px}.amazonReportFrame{width:100%;flex:1;min-height:0;border:0;background:#f5f7fb}.amazonEmpty{padding:12px;border:1px dashed #b9ced8;border-radius:9px;color:#747776}.amazonRecordMeta{font-size:12px;color:#667085}
 @media(max-width:800px){
  .topbar{height:auto;min-height:92px;display:block;padding:8px 10px}
- .logo{margin:0 auto 7px;width:120px}.logo img{width:102px}
+ .logo{margin:0 auto 7px;width:120px;justify-content:center}.logo img{width:108px}
+ .cloudAccount{position:absolute;right:8px;top:8px}.cloudEmail{display:none}.cloudAccount button{padding:5px 8px}
  .topnav{height:42px;display:grid;grid-template-columns:repeat(3,1fr)}
  .topnav button{padding:0 5px;border:0;border-radius:8px}.topnav button.active{background:#2f7cff}
  .layout{height:calc(100vh - 97px);display:block}
@@ -43,6 +51,17 @@ body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;co
 </style>
 </head>
 <body>
+<div id="loginGate" class="loginGate">
+ <form id="loginForm" class="loginCard">
+  <div class="loginBrand">ZARKER</div>
+  <div class="loginTitle">업무관리 로그인</div>
+  <div class="loginSub">PC와 휴대폰에서 같은 계정으로 로그인하면 재고·중국발주·월보고 기록이 자동으로 연동됩니다.</div>
+  <input id="loginEmail" type="email" autocomplete="username" placeholder="이메일" value="zk1@zarker.co.kr" required>
+  <input id="loginPassword" type="password" autocomplete="current-password" placeholder="비밀번호" required>
+  <button class="loginButton" type="submit">로그인</button>
+  <div id="loginStatus" class="loginStatus"></div>
+ </form>
+</div>
 <div class="topline"></div>
 <header class="topbar">
  <div class="logo"><img src="data:image/png;base64,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" alt="ZARKER"></div>
@@ -51,6 +70,7 @@ body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;co
   <button onclick="showMain('china',this)">중국발주</button>
   <button onclick="showMain('amazon',this)">아마존 월보고</button>
  </nav>
+ <div id="cloudAccount" class="cloudAccount" hidden><span class="cloudDot"></span><span id="cloudEmail" class="cloudEmail"></span><button id="logoutBtn" type="button">로그아웃</button></div>
 </header>
 
 <div class="layout">
@@ -1133,8 +1153,81 @@ document.getElementById('amazonShowCumulative').addEventListener('click',()=>sho
 document.getElementById('amazonShowMonthly').addEventListener('click',()=>showAmazonResult('monthly'));
 document.getElementById('amazonSaveBtn').addEventListener('click',()=>{if(!amazonCurrentData)return alert('먼저 Excel 분석 적용을 해주세요.');const title=document.getElementById('amazonReportTitle').value.trim()||'아마존 월보고';amazonRecords.push({title,fileName:amazonCurrentFile,savedAt:new Date().toISOString(),data:amazonCurrentData});saveAmazonRecords();document.getElementById('amazonWriteStatus').textContent='월보고 기록에 저장했습니다.';alert('아마존 월보고 기록에 저장했습니다.')});
 </script>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+import {getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+const firebaseConfig={
+ apiKey:'AIzaSyBJ9ZTI4Q9Z0W90HMhqd1h6VCRi2WA1W5A',
+ authDomain:'zarker-work-app.firebaseapp.com',
+ projectId:'zarker-work-app',
+ storageBucket:'zarker-work-app.firebasestorage.app',
+ messagingSenderId:'476304131663',
+ appId:'1:476304131663:web:48a60d7942db631fbc4c3a'
+};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const CLOUD_ITEMS=[
+ {id:'inventory',key:'zarkerInvV1'},
+ {id:'schedule',key:'zarker_work_schedule_shared_v1'},
+ {id:'china-orders',key:'zarker_china_orders_v14'},
+ {id:'amazon-reports',key:'zarker_amazon_monthly_reports_v1'}
+];
+const gate=document.getElementById('loginGate'),form=document.getElementById('loginForm'),status=document.getElementById('loginStatus'),account=document.getElementById('cloudAccount');
+let ready=false,applying=false,lastValues={},unsubs=[],saveTimers={};
+const localValue=key=>localStorage.getItem(key)||'';
+const friendlyError=e=>{
+ const c=String(e&&e.code||'');
+ if(c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('user-not-found'))return '이메일 또는 비밀번호가 올바르지 않습니다.';
+ if(c.includes('too-many-requests'))return '로그인을 여러 번 시도했습니다. 잠시 후 다시 시도해 주세요.';
+ if(c.includes('network'))return '인터넷 연결을 확인해 주세요.';
+ return '로그인할 수 없습니다. 입력 내용을 확인해 주세요.';
+};
+form.addEventListener('submit',async e=>{e.preventDefault();status.className='loginStatus cloudLoading';status.textContent='로그인 중...';try{await signInWithEmailAndPassword(auth,document.getElementById('loginEmail').value.trim(),document.getElementById('loginPassword').value)}catch(err){status.className='loginStatus';status.textContent=friendlyError(err)}});
+document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
+
+async function startCloud(user){
+ ready=false;applying=true;status.className='loginStatus cloudLoading';status.textContent='클라우드 데이터를 불러오는 중...';
+ let changed=false;
+ for(const item of CLOUD_ITEMS){
+  const ref=doc(db,'zarkerShared',item.id),snap=await getDoc(ref),local=localValue(item.key);
+  if(snap.exists()){
+   const cloud=String(snap.data().payload||'');
+   if(cloud!==local){if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);changed=true}
+   lastValues[item.key]=cloud;
+  }else{
+   await setDoc(ref,{payload:local,updatedAt:serverTimestamp(),updatedBy:user.email||''});lastValues[item.key]=local;
+  }
+ }
+ applying=false;ready=true;gate.classList.add('hidden');account.hidden=false;document.getElementById('cloudEmail').textContent=user.email||'';
+ unsubs.forEach(f=>f());unsubs=[];
+ CLOUD_ITEMS.forEach(item=>{
+  const ref=doc(db,'zarkerShared',item.id);
+  unsubs.push(onSnapshot(ref,snap=>{
+   if(!ready||applying||!snap.exists())return;
+   const cloud=String(snap.data().payload||''),local=localValue(item.key);
+   if(cloud===local){lastValues[item.key]=cloud;return}
+   applying=true;if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);lastValues[item.key]=cloud;sessionStorage.setItem('zarker_cloud_message','다른 기기의 최신 데이터를 반영했습니다.');location.reload();
+  }));
+ });
+ if(changed&&!sessionStorage.getItem('zarker_cloud_reloaded')){sessionStorage.setItem('zarker_cloud_reloaded','1');location.reload();return}
+ sessionStorage.removeItem('zarker_cloud_reloaded');
+ const msg=sessionStorage.getItem('zarker_cloud_message');if(msg){sessionStorage.removeItem('zarker_cloud_message');setTimeout(()=>alert(msg),500)}
+}
+async function stopCloud(){ready=false;unsubs.forEach(f=>f());unsubs=[];account.hidden=true;gate.classList.remove('hidden');status.textContent='';document.getElementById('loginPassword').value=''}
+onAuthStateChanged(auth,user=>{if(user)startCloud(user).catch(e=>{console.error(e);status.className='loginStatus';status.textContent='클라우드 연결에 실패했습니다. 잠시 후 새로고침해 주세요.'});else stopCloud()});
+
+setInterval(()=>{
+ if(!ready||applying||!auth.currentUser)return;
+ CLOUD_ITEMS.forEach(item=>{
+  const value=localValue(item.key);if(value===lastValues[item.key])return;
+  lastValues[item.key]=value;clearTimeout(saveTimers[item.key]);
+  saveTimers[item.key]=setTimeout(async()=>{try{await setDoc(doc(db,'zarkerShared',item.id),{payload:value,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.email||''})}catch(e){console.error('cloud save',e)}},700);
+ });
+},1200);
+</script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
 </script>
 </body>
 </html>
