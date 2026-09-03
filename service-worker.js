@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v35';
+const CACHE_NAME='zarker-work-v39';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
