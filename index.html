@@ -924,7 +924,8 @@ function startFresh(){
  salesFile.value=&#x27;&#x27;;stockFile.value=&#x27;&#x27;;salesName.textContent=&#x27;파일을 선택해 주세요.&#x27;;stockName.textContent=&#x27;파일을 선택해 주세요.&#x27;;
  saveLocal();render();alert(&#x27;초기화했습니다. 매출 파일과 재고 파일을 새로 선택해 주세요.&#x27;);
 }
-function editRow(i,k,v){let r=state.records[state.current].rows[i];r[k]=(k===&#x27;note&#x27;?v:Number(v)||0);saveLocal();renderKpi()}
+function editRow(i,k,v){let r=state.records[state.current].rows[i];r[k]=(k===&#x27;note&#x27;?v:numValue(v));saveLocal();renderKpi()}
+function formatOrderInput(el,i){const digits=String(el.value||&#x27;&#x27;).replace(/[^0-9]/g,&#x27;&#x27;);const n=digits?Number(digits):0;state.records[state.current].rows[i].orderQty=n;el.value=digits?n.toLocaleString(&#x27;ko-KR&#x27;):&#x27;&#x27;;saveLocal();renderKpi()}
 function groupProductionBadge(group){
  if(group===&#x27;스테인리스&#x27;)return &#x27;&lt;span class=&quot;badge&quot;&gt;장기생산 6개월&lt;/span&gt;&#x27;;
  if(group===&#x27;BIKE&#x27;||group===&#x27;녹방지&#x27;)return &#x27;&lt;span class=&quot;badge&quot;&gt;생산기간 3개월&lt;/span&gt;&#x27;;
@@ -947,7 +948,7 @@ function exportSavedExcel(){
    [&#x27;저장 일시&#x27;,rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;],
    [],[&#x27;구분&#x27;,&#x27;제품/규격&#x27;,&#x27;판매량&#x27;,&#x27;월평균 판매량&#x27;,&#x27;현재고&#x27;,(rec.forecastMonth||&#x27;-&#x27;)+&#x27; 예상재고&#x27;,(rec.spareMonth||&#x27;-&#x27;)+&#x27; 기준 여유개월수&#x27;,&#x27;발주수량&#x27;,&#x27;비고&#x27;]
  ];
- rec.rows.forEach(r=&gt;{const c=calc(r,rec);data.push([r.group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,Number(r.orderQty)||0,r.note||&#x27;&#x27;])});
+ rec.rows.forEach(r=&gt;{const c=calc(r,rec);data.push([r.group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,numValue(r.orderQty),r.note||&#x27;&#x27;])});
  const ws=XLSX.utils.aoa_to_sheet(data);
  ws[&#x27;!merges&#x27;]=[XLSX.utils.decode_range(&#x27;A1:I1&#x27;)];
  ws[&#x27;!cols&#x27;]=[{wch:16},{wch:28},{wch:13},{wch:16},{wch:13},{wch:13},{wch:12},{wch:13},{wch:38}];
@@ -980,7 +981,7 @@ window.setChinaView=setChinaView;
 function renderKpi(){
  const rec=state.records[state.current];kpiItems.textContent=rec.rows.length;
  kpiLong.textContent=rec.rows.filter(x=&gt;x.longLead).length;
- kpiOrder.textContent=fmt(rec.rows.reduce((s,x)=&gt;s+(Number(x.orderQty)||0),0));
+ kpiOrder.textContent=fmt(rec.rows.reduce((s,x)=&gt;s+numValue(x.orderQty),0));
  kpiStock.textContent=fmt(rec.rows.reduce((s,x)=&gt;s+(Number(x.stock)||0),0));
 }
 function render(){
@@ -1003,7 +1004,7 @@ function render(){
     &lt;td class=&quot;num&quot;&gt;&lt;span class=&quot;stockValue&quot;&gt;${fmt(r.stock)}&lt;/span&gt;&lt;/td&gt;
     &lt;td class=&quot;num ${c.forecast&lt;0?&#x27;neg&#x27;:&#x27;good&#x27;}&quot;&gt;${fmt(c.forecast)}&lt;/td&gt;
 &lt;td class=&quot;num ${spareClass(c)}&quot;&gt;${c.avg?Math.round(c.spare):&#x27;-&#x27;}&lt;/td&gt;
-    &lt;td&gt;&lt;input class=&quot;order&quot; value=&quot;${r.orderQty||0}&quot; onchange=&quot;editRow(${i},&#x27;orderQty&#x27;,this.value)&quot;&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;input class=&quot;order&quot; inputmode=&quot;numeric&quot; value=&quot;${fmt(r.orderQty)}&quot; oninput=&quot;formatOrderInput(this,${i})&quot; onblur=&quot;if(!this.value)this.value=&#x27;0&#x27;&quot;&gt;&lt;/td&gt;
     &lt;td&gt;&lt;textarea class=&quot;note&quot; onchange=&quot;editRow(${i},&#x27;note&#x27;,this.value)&quot;&gt;${String(r.note||&#x27;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}&lt;/textarea&gt;&lt;/td&gt;
    &lt;/tr&gt;`;
  });
