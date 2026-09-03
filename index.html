@@ -14,13 +14,14 @@
 body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;color:#051e4b}
 .topline{height:5px;background:linear-gradient(90deg,#41afc8,#1487b4,#1c7096)}
 .topbar{height:58px;background:#051e4b;color:#fff;display:flex;align-items:center;padding:0 18px;gap:26px;box-shadow:0 3px 14px rgba(5,30,75,.18)}
-.logo{width:138px;background:transparent;padding:2px 4px;display:flex;align-items:center;justify-content:flex-start}
-.logo img{width:118px;height:auto;filter:brightness(0) invert(1);opacity:.96}
+.logo{width:138px;background:#fff;border-radius:2px;padding:4px 9px;display:flex;align-items:center;justify-content:center}
+.logo img{width:112px;height:auto}
 .cloudAccount{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#d7e8ef;white-space:nowrap}
 .cloudAccount button{border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;padding:7px 10px;font-weight:800;cursor:pointer}
 .cloudDot{width:8px;height:8px;border-radius:50%;background:#32b4b4;box-shadow:0 0 0 3px rgba(50,180,180,.16)}
 .loginGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#051e4b 0%,#0b315c 58%,#1c7096 100%);display:flex;align-items:center;justify-content:center;padding:20px}
 .loginGate.hidden{display:none}.loginCard{width:min(420px,100%);background:#fff;border-radius:20px;padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.32)}
+.authSplash{position:fixed;inset:0;z-index:100000;background:#051e4b;display:flex;align-items:center;justify-content:center}.authSplash.hidden{display:none}.authSplashBrand{font-size:25px;font-weight:950;color:#fff;letter-spacing:.8px}.authSplashDot{display:inline-block;width:8px;height:8px;margin-left:10px;border-radius:50%;background:#32b4b4;animation:cloudPulse 1s ease-in-out infinite}@keyframes cloudPulse{50%{opacity:.25;transform:scale(.75)}}
 .loginBrand{color:#1c7096;font-size:28px;font-weight:950;letter-spacing:.5px}.loginTitle{font-size:21px;font-weight:900;margin:18px 0 6px}.loginSub{font-size:13px;color:#667085;line-height:1.55;margin-bottom:18px}
 .loginCard input{width:100%;height:46px;border:1px solid #b9ced8;border-radius:10px;padding:10px 12px;margin:6px 0;font-size:15px}.loginButton{width:100%;height:46px;border:0;border-radius:10px;background:linear-gradient(135deg,#41afc8,#1487b4);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-top:10px}.loginStatus{min-height:20px;color:#c82121;font-size:12px;margin-top:10px}.cloudLoading{color:#1c7096}
 .topnav{display:flex;height:100%;gap:4px}
@@ -51,7 +52,8 @@ body{margin:0;background:#f3f7fa;font-family:Arial,'Malgun Gothic',sans-serif;co
 </style>
 </head>
 <body>
-<div id="loginGate" class="loginGate">
+<div id="authSplash" class="authSplash"><div class="authSplashBrand">ZARKER<span class="authSplashDot"></span></div></div>
+<div id="loginGate" class="loginGate hidden">
  <form id="loginForm" class="loginCard">
   <div class="loginBrand">ZARKER</div>
   <div class="loginTitle">업무관리 로그인</div>
@@ -1173,7 +1175,7 @@ const CLOUD_ITEMS=[
  {id:'china-orders',key:'zarker_china_orders_v14'},
  {id:'amazon-reports',key:'zarker_amazon_monthly_reports_v1'}
 ];
-const gate=document.getElementById('loginGate'),form=document.getElementById('loginForm'),status=document.getElementById('loginStatus'),account=document.getElementById('cloudAccount');
+const gate=document.getElementById('loginGate'),splash=document.getElementById('authSplash'),form=document.getElementById('loginForm'),status=document.getElementById('loginStatus'),account=document.getElementById('cloudAccount');
 let ready=false,applying=false,lastValues={},unsubs=[],saveTimers={};
 const localValue=key=>localStorage.getItem(key)||'';
 const friendlyError=e=>{
@@ -1199,7 +1201,7 @@ async function startCloud(user){
    await setDoc(ref,{payload:local,updatedAt:serverTimestamp(),updatedBy:user.email||''});lastValues[item.key]=local;
   }
  }
- applying=false;ready=true;gate.classList.add('hidden');account.hidden=false;document.getElementById('cloudEmail').textContent=user.email||'';
+ applying=false;ready=true;gate.classList.add('hidden');splash.classList.add('hidden');account.hidden=false;document.getElementById('cloudEmail').textContent=user.email||'';
  unsubs.forEach(f=>f());unsubs=[];
  CLOUD_ITEMS.forEach(item=>{
   const ref=doc(db,'zarkerShared',item.id);
@@ -1213,7 +1215,7 @@ async function startCloud(user){
  if(changed&&!sessionStorage.getItem('zarker_cloud_reloaded')){sessionStorage.setItem('zarker_cloud_reloaded','1');location.reload();return}
  sessionStorage.removeItem('zarker_cloud_reloaded');
 }
-async function stopCloud(){ready=false;unsubs.forEach(f=>f());unsubs=[];account.hidden=true;gate.classList.remove('hidden');status.textContent='';document.getElementById('loginPassword').value=''}
+async function stopCloud(){ready=false;unsubs.forEach(f=>f());unsubs=[];account.hidden=true;splash.classList.add('hidden');gate.classList.remove('hidden');status.textContent='';document.getElementById('loginPassword').value=''}
 onAuthStateChanged(auth,user=>{if(user)startCloud(user).catch(e=>{console.error(e);status.className='loginStatus';status.textContent='클라우드 연결에 실패했습니다. 잠시 후 새로고침해 주세요.'});else stopCloud()});
 
 setInterval(()=>{
