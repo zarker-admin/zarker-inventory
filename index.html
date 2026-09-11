@@ -580,7 +580,7 @@ function addRow(){
  saveLocal(); render();
  [&#x27;d&#x27;,&#x27;product&#x27;,&#x27;spec&#x27;,&#x27;box&#x27;,&#x27;qty&#x27;,&#x27;note&#x27;].forEach(id=&gt;document.getElementById(id).value=&#x27;&#x27;);
 }
-function edit(i,k,v){rows[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?numberValue(v):v;saveLocal();render()}function editNote(i,el){rows[i].note=String(el.innerText||&#x27;&#x27;).replace(/\r/g,&#x27;&#x27;);saveLocal()}
+function edit(i,k,v){rows[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?numberValue(v):v;saveLocal()}function editNote(i,el){rows[i].note=String(el.innerText||&#x27;&#x27;).replace(/\r/g,&#x27;&#x27;);saveLocal()}
 function delRow(i){if(confirm(&#x27;이 작업일정을 삭제할까요?&#x27;)){rows.splice(i,1);saveLocal();render()}}
 function esc(s){return String(s??&#x27;&#x27;).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}
 function render(){
