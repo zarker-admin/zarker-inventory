@@ -580,7 +580,7 @@ function addRow(){
  saveLocal(); render();
  [&#x27;d&#x27;,&#x27;product&#x27;,&#x27;spec&#x27;,&#x27;box&#x27;,&#x27;qty&#x27;,&#x27;note&#x27;].forEach(id=&gt;document.getElementById(id).value=&#x27;&#x27;);
 }
-function edit(i,k,v){rows[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?numberValue(v):v;saveLocal();render()}
+function edit(i,k,v){rows[i][k]=[&#x27;box&#x27;,&#x27;qty&#x27;].includes(k)?numberValue(v):v;saveLocal();render()}function editNote(i,el){rows[i].note=String(el.innerText||&#x27;&#x27;).replace(/\r/g,&#x27;&#x27;);saveLocal()}
 function delRow(i){if(confirm(&#x27;이 작업일정을 삭제할까요?&#x27;)){rows.splice(i,1);saveLocal();render()}}
 function esc(s){return String(s??&#x27;&#x27;).replace(/&amp;/g,&#x27;&amp;amp;&#x27;).replace(/&lt;/g,&#x27;&amp;lt;&#x27;).replace(/&gt;/g,&#x27;&amp;gt;&#x27;)}
 function render(){
@@ -595,7 +595,7 @@ function render(){
     &lt;td&gt;&lt;input value=&quot;${esc(x.spec)}&quot; onchange=&quot;edit(${i},&#x27;spec&#x27;,this.value)&quot;&gt;&lt;/td&gt;
     &lt;td&gt;&lt;input type=&quot;number&quot; value=&quot;${x.box||0}&quot; onchange=&quot;edit(${i},&#x27;box&#x27;,this.value)&quot;&gt;&lt;/td&gt;
     &lt;td&gt;&lt;input type=&quot;text&quot; inputmode=&quot;numeric&quot; value=&quot;${formatNumber(x.qty||0)}&quot; oninput=&quot;formatQty(this)&quot; onchange=&quot;edit(${i},&#x27;qty&#x27;,this.value)&quot;&gt;&lt;/td&gt;
-    &lt;td&gt;&lt;textarea onchange=&quot;edit(${i},&#x27;note&#x27;,this.value)&quot;&gt;${esc(x.note)}&lt;/textarea&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;div class=&quot;noteEditor&quot; contenteditable=&quot;true&quot; role=&quot;textbox&quot; aria-label=&quot;비고&quot; oninput=&quot;editNote(${i},this)&quot; style=&quot;min-height:92px;border:1px solid #b9ced8;border-radius:8px;padding:8px 9px;background:#fff;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left;line-height:1.45;cursor:text&quot;&gt;${esc(x.note)}&lt;/div&gt;&lt;/td&gt;
     &lt;td&gt;&lt;select class=&quot;status ${cls}&quot; onchange=&quot;edit(${i},&#x27;status&#x27;,this.value)&quot;&gt;&lt;option ${x.status===&#x27;작업예정&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;작업예정&lt;/option&gt;&lt;option ${x.status===&#x27;진행중&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;진행중&lt;/option&gt;&lt;option ${x.status===&#x27;완료&#x27;?&#x27;selected&#x27;:&#x27;&#x27;}&gt;완료&lt;/option&gt;&lt;/select&gt;&lt;/td&gt;
     &lt;td&gt;&lt;button class=&quot;btn red&quot; onclick=&quot;delRow(${i})&quot;&gt;삭제&lt;/button&gt;&lt;/td&gt;
    &lt;/tr&gt;`;
