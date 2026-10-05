@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v43-cloud-sync';
+const CACHE_NAME='zarker-work-v44-coupang-monthly-merge';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
