@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v45-coupang-monthly-repair';
+const CACHE_NAME='zarker-work-v46-balanced-inventory-allocation';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
