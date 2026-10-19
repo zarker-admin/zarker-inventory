@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v47-stock-import-fix';
+const CACHE_NAME='zarker-work-v48-xb-stock-fix';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{

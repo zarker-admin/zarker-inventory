@@ -852,6 +852,8 @@ function mapTarget(spec){
  if(s.startsWith(&#x27;XD25&#x27;)) return &#x27;XD25*&#x27;;
  if(s.startsWith(&#x27;XD35&#x27;)) return &#x27;XD35*&#x27;;
  if(s.startsWith(&#x27;XD40&#x27;)&amp;&amp;!s.startsWith(&#x27;XD40L&#x27;)) return &#x27;XD40*&#x27;;
+ if(s.startsWith(&#x27;XB35&#x27;)) return &#x27;XB35*&#x27;;
+ if(s.startsWith(&#x27;XB40&#x27;)) return &#x27;XB40*&#x27;;
  // Packaging consolidation for the same China-order product.
  if(s.startsWith(&#x27;X50L&#x27;)) return &#x27;X50L&#x27;;
  if(s.startsWith(&#x27;X50&#x27;)) return &#x27;X50&#x27;;
@@ -1567,7 +1569,7 @@ setInterval(()=>{
 },1200);
 </script>
 <script>
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=47-stock-import-fix').catch(()=>{}));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=48-xb-stock-fix').catch(()=>{}));
 </script>
 </body>
 </html>
