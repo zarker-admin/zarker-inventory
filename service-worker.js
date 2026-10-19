@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v46-balanced-inventory-allocation';
+const CACHE_NAME='zarker-work-v47-stock-import-fix';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
