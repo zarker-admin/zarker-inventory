@@ -933,13 +933,13 @@ function detectStock(rows){
  for(let i=0;i&lt;Math.min(rows.length,40);i++){
    const hs=(rows[i]||[]).map(x=&gt;String(x||&#x27;&#x27;).replace(/\s+/g,&#x27;&#x27;));
    const hasProduct=hs.some(h=&gt;/제품|품명|규격|상품명/.test(h));
-   const hasStock=hs.some(h=&gt;/본사|포천|쿠팡|아마존|현재고|가용재고|재고수량|총재고/.test(h));
+   const hasStock=hs.some(h=&gt;/본사|포천|쿠팡|아마존|현재고|가용재고|재고수량|총재고|^재고$|^총계$/.test(h));
    if(hasProduct&amp;&amp;hasStock){hr=i;break}
  }
  const heads=(rows[hr]||[]).map(x=&gt;String(x||&#x27;&#x27;));
  const stockCols=[];
  heads.forEach((h,i)=&gt;{if(/본사|포천|쿠팡|아마존/.test(h))stockCols.push(i)});
- let currentCol=heads.findIndex(h=&gt;/현재고|가용재고|재고수량|총재고/.test(h.replace(/\s+/g,&#x27;&#x27;)));
+ let currentCol=heads.findIndex(h=&gt;/^(현재고|가용재고|재고수량|총재고|재고|총계)$/.test(h.replace(/\s+/g,&#x27;&#x27;)));
  for(let i=hr&gt;=0?hr+1:0;i&lt;rows.length;i++){
    const r=rows[i];if(!r)continue;
    let spec=&#x27;&#x27;,specIndex=-1;
@@ -955,8 +955,8 @@ function detectStock(rows){
    if(coupleLike&amp;&amp;(!isCoupleLockRow(rowTexts)||!isCoupleLockSpec(spec)))continue;
    let total=0;
    const rightStockCols=stockCols.filter(c=&gt;c&gt;specIndex);
-   if(rightStockCols.length) rightStockCols.forEach(c=&gt;total+=numValue(r[c]));
-   else if(currentCol&gt;specIndex) total=numValue(r[currentCol]);
+   if(currentCol&gt;specIndex) total=numValue(r[currentCol]);
+   else if(rightStockCols.length) rightStockCols.forEach(c=&gt;total+=numValue(r[c]));
    else {
      // Product codes are always to the left of the product/spec cell and must
      // never be counted as inventory, even when a misleading header points there.
