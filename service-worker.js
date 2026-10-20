@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v50-cl4';
+const CACHE_NAME='zarker-work-v53-china-record-highlight';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
