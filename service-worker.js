@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v49-saved-order-edit';
+const CACHE_NAME='zarker-work-v50-cl4';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{

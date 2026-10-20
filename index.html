@@ -688,7 +688,7 @@ tr.long td{background:inherit}
 &lt;/head&gt;
 &lt;body&gt;
 &lt;div class=&quot;wrap&quot;&gt;
-  &lt;h1&gt;중국발주 관리 &lt;span class=&quot;versionTag&quot;&gt;v22&lt;/span&gt;&lt;/h1&gt;
+  &lt;h1&gt;중국발주 관리 &lt;span class=&quot;versionTag&quot;&gt;v23&lt;/span&gt;&lt;/h1&gt;
   &lt;div class=&quot;sub&quot;&gt;매출 엑셀 + 재고 엑셀을 업로드해 월별 발주검토 기록을 생성하고 과거 기록을 계속 보관합니다.&lt;/div&gt;
 
   &lt;div class=&quot;card orderOnly&quot;&gt;
@@ -784,15 +784,26 @@ if(state.notePresetVersion!==33){state.records.forEach(applyNotePreset);state.no
  [...state.records,...state.savedRecords].forEach(rec=&gt;{if(!rec.salesStart)rec.salesStart=&#x27;2025-09&#x27;;if(!rec.salesEnd)rec.salesEnd=&#x27;2026-08&#x27;});
 function applyChinaProductRules(){
  const brass=[&#x27;B20 (브리스터)&#x27;,&#x27;B20 동일 (브리스터)&#x27;,&#x27;B30 (브리스터)&#x27;,&#x27;B30 동일 (브리스터)&#x27;,&#x27;B40 (브리스터)&#x27;,&#x27;B40 동일 (브리스터)&#x27;,&#x27;B50 (브리스터)&#x27;,&#x27;B50 동일 (브리스터)&#x27;].map(name=&gt;({group:&#x27;부식방지 황동&#x27;,name,sales:0,stock:0,orderQty:0,note:&#x27;&#x27;,longLead:false}));
+ const couple4=[
+  {group:&#x27;커플락&#x27;,name:&#x27;CL-4(Red)&#x27;,sales:0,stock:3760,orderQty:0,note:&#x27;신제품 · 판매 추이 확인&#x27;,longLead:false},
+  {group:&#x27;커플락&#x27;,name:&#x27;CL-4(Pink)&#x27;,sales:0,stock:2800,orderQty:0,note:&#x27;신제품 · 판매 추이 확인&#x27;,longLead:false},
+  {group:&#x27;커플락&#x27;,name:&#x27;CL-4(White)&#x27;,sales:0,stock:3760,orderQty:0,note:&#x27;신제품 · 판매 추이 확인&#x27;,longLead:false},
+  {group:&#x27;커플락&#x27;,name:&#x27;CL-4(Green)&#x27;,sales:0,stock:1840,orderQty:0,note:&#x27;신제품 · 판매 추이 확인&#x27;,longLead:false},
+  {group:&#x27;커플락&#x27;,name:&#x27;CL-4(Yellow)&#x27;,sales:0,stock:1900,orderQty:0,note:&#x27;신제품 · 판매 추이 확인&#x27;,longLead:false}
+ ];
  const masterAt=PRODUCT_MASTER.findIndex(x=&gt;x.group===&#x27;황동&#x27;||x.group===&#x27;부식방지 황동&#x27;);
  for(let i=PRODUCT_MASTER.length-1;i&gt;=0;i--)if(PRODUCT_MASTER[i].group===&#x27;황동&#x27;||PRODUCT_MASTER[i].group===&#x27;부식방지 황동&#x27;)PRODUCT_MASTER.splice(i,1);
  PRODUCT_MASTER.splice(masterAt&lt;0?PRODUCT_MASTER.length:masterAt,0,...brass.map(x=&gt;({...x})));
+ const coupleAt=PRODUCT_MASTER.reduce((at,x,i)=&gt;x.group===&#x27;커플락&#x27;?i+1:at,-1);
+ couple4.slice().reverse().forEach(x=&gt;{if(!PRODUCT_MASTER.some(r=&gt;r.name===x.name))PRODUCT_MASTER.splice(coupleAt&lt;0?PRODUCT_MASTER.length:coupleAt,0,{...x})});
  state.records.forEach(rec=&gt;{
    const rows=rec.rows||[];
    const at=rows.findIndex(x=&gt;x.group===&#x27;황동&#x27;||x.group===&#x27;부식방지 황동&#x27;);
    const migrated=brass.map(template=&gt;{let old=rows.find(x=&gt;norm(x.name)===norm(template.name));if(!old&amp;&amp;!template.name.includes(&#x27;동일&#x27;))old=rows.find(x=&gt;norm(x.name)===norm(template.name.match(/^B\d+/)[0]));return {...template,...(old||{}),group:template.group,name:template.name}});
    rec.rows=rows.filter(x=&gt;x.group!==&#x27;황동&#x27;&amp;&amp;x.group!==&#x27;부식방지 황동&#x27;);
    rec.rows.splice(at&lt;0?rec.rows.length:at,0,...migrated);
+   const clAt=rec.rows.reduce((pos,x,i)=&gt;x.group===&#x27;커플락&#x27;?i+1:pos,-1);
+   couple4.slice().reverse().forEach(template=&gt;{if(!rec.rows.some(r=&gt;r.name===template.name))rec.rows.splice(clAt&lt;0?rec.rows.length:clAt,0,{...template})});
  });
 }
 applyChinaProductRules();
@@ -845,7 +856,7 @@ function spareClass(c){if(!c.avg)return &#x27;spareValue spareNormal&#x27;;const
 function isCorrosionBrassRow(texts){return (texts||[]).some(x=&gt;norm(x).includes(&#x27;자커황동부식방지&#x27;))}
 function isCorrosionBrassSpec(spec){return /^B(?:20|30|40|50)(?:동일)?브리스터$/.test(norm(spec))}
 function isCoupleLockRow(texts){return (texts||[]).some(x=&gt;norm(x).includes(&#x27;자커커플락&#x27;))}
-function isCoupleLockSpec(spec){return /^CL3(?:GREEN|PINK|RED|WHITE|YELLOW)$/.test(norm(spec))}
+function isCoupleLockSpec(spec){return /^CL[34](?:GREEN|PINK|RED|WHITE|YELLOW)$/.test(norm(spec))}
 function mapTarget(spec){
  const s=norm(spec);
  // Unpacked and starred dial products are one China-order item.
@@ -860,7 +871,7 @@ function mapTarget(spec){
  if(s.startsWith(&#x27;X70&#x27;)) return &#x27;X70&#x27;;
  // Corrosion-resistant brass: normal and alike-key products stay separate.
  if(isCorrosionBrassSpec(spec)){const model=s.match(/^B(?:20|30|40|50)/)[0];return model+(s.includes(&#x27;동일&#x27;)?&#x27; 동일&#x27;:&#x27;&#x27;)+&#x27; (브리스터)&#x27;}
- const cl=s.match(/^CL3(GREEN|PINK|RED|WHITE|YELLOW)$/);if(cl){const names={GREEN:&#x27;Green&#x27;,PINK:&#x27;Pink&#x27;,RED:&#x27;Red&#x27;,WHITE:&#x27;White&#x27;,YELLOW:&#x27;Yellow&#x27;};return &#x27;CL-3(&#x27;+names[cl[1]]+&#x27;)&#x27;}
+ const cl=s.match(/^CL([34])(GREEN|PINK|RED|WHITE|YELLOW)$/);if(cl){const names={GREEN:&#x27;Green&#x27;,PINK:&#x27;Pink&#x27;,RED:&#x27;Red&#x27;,WHITE:&#x27;White&#x27;,YELLOW:&#x27;Yellow&#x27;};return &#x27;CL-&#x27;+cl[1]+&#x27;(&#x27;+names[cl[2]]+&#x27;)&#x27;}
  // J-series: normal + alike consolidated per base model.
  if(s.includes(&#x27;J45S&#x27;)) return &#x27;J45S&#x27;;
  if(s.includes(&#x27;J45&#x27;)&amp;&amp;!s.includes(&#x27;J45S&#x27;)) return &#x27;J45&#x27;;
@@ -920,7 +931,7 @@ function detectSales(rows,start,end){
    if(!spec)continue;
    const brassLike=/^B(?:20|30|40|50)/.test(norm(spec));
    if(brassLike&amp;&amp;(!isCorrosionBrassRow(texts)||!isCorrosionBrassSpec(spec)))continue;
-   const coupleLike=norm(spec).startsWith(&#x27;CL3&#x27;);
+   const coupleLike=/^CL[34]/.test(norm(spec));
    if(coupleLike&amp;&amp;(!isCoupleLockRow(texts)||!isCoupleLockSpec(spec)))continue;
    const qty=numValue(r[qtyCol]);
    let target=mapTarget(spec);
@@ -953,7 +964,7 @@ function detectStock(rows){
    const rowTexts=r.map(x=&gt;String(x||&#x27;&#x27;));
    const brassLike=/^B(?:20|30|40|50)/.test(norm(spec));
    if(brassLike&amp;&amp;(!isCorrosionBrassRow(rowTexts)||!isCorrosionBrassSpec(spec)))continue;
-   const coupleLike=norm(spec).startsWith(&#x27;CL3&#x27;);
+   const coupleLike=/^CL[34]/.test(norm(spec));
    if(coupleLike&amp;&amp;(!isCoupleLockRow(rowTexts)||!isCoupleLockSpec(spec)))continue;
    let total=0;
    const rightStockCols=stockCols.filter(c=&gt;c&gt;specIndex);
@@ -1272,7 +1283,7 @@ function pct(now,prev){if(!prev)return now?&#x27;신규&#x27;:&#x27;-&#x27;;cons
 function productRank(p){const i=PRODUCT_ORDER.indexOf(p);return i&lt;0?999:i}
 function renderDetail(){const month=Number(detailMonth.value)||1,q=(detailSearch.value||&#x27;&#x27;).toLowerCase(),src=data.detail.filter(x=&gt;x.month===month&amp;&amp;(!q||(x.product+&#x27; &#x27;+x.spec).toLowerCase().includes(q))),map={};src.forEach(x=&gt;{const key=detailMode===&#x27;group&#x27;?x.product:x.product+&#x27;|&#x27;+x.spec;map[key]??={product:x.product,spec:x.spec,years:{2025:{qty:0,sales:0},2026:{qty:0,sales:0}}};if(x.year===2025||x.year===2026){map[key].years[x.year].qty+=x.qty;map[key].years[x.year].sales+=x.sales}});let rows=Object.values(map);rows.sort((a,b)=&gt;(productRank(a.product)-productRank(b.product))||(detailMode===&#x27;spec&#x27;?(b.years[2026].qty-a.years[2026].qty):0)||(a.product||&#x27;&#x27;).localeCompare(b.product||&#x27;&#x27;,&#x27;ko&#x27;));detailHead.innerHTML=`&lt;tr&gt;&lt;th class=&quot;sticky1&quot;&gt;품목&lt;/th&gt;${detailMode===&#x27;spec&#x27;?&#x27;&lt;th class=&quot;sticky2&quot;&gt;제품 규격&lt;/th&gt;&#x27;:&#x27;&#x27;}&lt;th&gt;2025 수량&lt;/th&gt;&lt;th&gt;2026 수량&lt;/th&gt;&lt;th&gt;수량 증감&lt;/th&gt;&lt;th&gt;수량 증감률&lt;/th&gt;&lt;th&gt;2025 매출&lt;/th&gt;&lt;th&gt;2026 매출&lt;/th&gt;&lt;th&gt;매출 증감&lt;/th&gt;&lt;th&gt;매출 증감률&lt;/th&gt;&lt;/tr&gt;`;let lastGroup=&#x27;&#x27;;detailBody.innerHTML=rows.length?rows.map(x=&gt;{const a=x.years[2025],b=x.years[2026],qd=b.qty-a.qty,sd=b.sales-a.sales,first=x.product!==lastGroup;lastGroup=x.product;return `&lt;tr class=&quot;${detailMode===&#x27;spec&#x27;&amp;&amp;first?&#x27;groupStart&#x27;:&#x27;&#x27;}&quot;&gt;&lt;td class=&quot;sticky1&quot;&gt;&lt;b&gt;${x.product}&lt;/b&gt;&lt;/td&gt;${detailMode===&#x27;spec&#x27;?`&lt;td class=&quot;sticky2&quot;&gt;&lt;b&gt;${x.spec||&#x27;-&#x27;}&lt;/b&gt;&lt;/td&gt;`:&#x27;&#x27;}&lt;td class=&quot;num&quot;&gt;${qty(a.qty)}&lt;/td&gt;&lt;td class=&quot;num strong&quot;&gt;${qty(b.qty)}&lt;/td&gt;&lt;td class=&quot;num ${qd&lt;0?&#x27;neg&#x27;:&#x27;pos&#x27;}&quot;&gt;${qd&gt;=0?&#x27;+&#x27;:&#x27;&#x27;}${qty(qd)}&lt;/td&gt;&lt;td class=&quot;num ${qd&lt;0?&#x27;neg&#x27;:&#x27;pos&#x27;}&quot;&gt;${pct(b.qty,a.qty)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${won(a.sales)}&lt;/td&gt;&lt;td class=&quot;num strong&quot;&gt;${won(b.sales)}&lt;/td&gt;&lt;td class=&quot;num ${sd&lt;0?&#x27;neg&#x27;:&#x27;pos&#x27;}&quot;&gt;${sd&gt;=0?&#x27;+&#x27;:&#x27;&#x27;}${won(sd)}&lt;/td&gt;&lt;td class=&quot;num ${sd&lt;0?&#x27;neg&#x27;:&#x27;pos&#x27;}&quot;&gt;${pct(b.sales,a.sales)}&lt;/td&gt;&lt;/tr&gt;`}).join(&#x27;&#x27;):&#x27;&lt;tr&gt;&lt;td class=&quot;empty&quot;&gt;표시할 품목이 없습니다.&lt;/td&gt;&lt;/tr&gt;&#x27;;const tq=rows.reduce((s,x)=&gt;s+x.years[2026].qty,0),ts=rows.reduce((s,x)=&gt;s+x.years[2026].sales,0),ps=rows.reduce((s,x)=&gt;s+x.years[2025].sales,0);dQty.textContent=qty(tq)+&#x27;개&#x27;;dSales.textContent=won(ts);dYoY.textContent=pct(ts,ps);dYoY.className=ts-ps&lt;0?&#x27;neg&#x27;:&#x27;pos&#x27;;dCount.textContent=qty(rows.length)+&#x27;개&#x27;}
 function orderMatrix(){const map={};orderData.forEach(x=&gt;{map[x.sku]??={};map[x.sku][x.month]=(map[x.sku][x.month]||0)+Number(x.qty||0)});return map}
-function skuRank(s){const rules=[/다이얼|XD\d|X50|X70/,/버튼/,/철판|N\d/,/걸고리/,/부식|녹방지|J45|J55/,/스테인리스|S40|S50|G70/i,/황동|B20|B30|B40|B50/,/BIKE|자전거|NO-?90|C120/i,/줄자|m-?\d|미터/,/커플락|CL-?[23]/i,/절단석/,/마스터|KEY_/i,/TSA/i];const i=rules.findIndex(r=&gt;r.test(s));return i&lt;0?999:i}
+function skuRank(s){const rules=[/다이얼|XD\d|X50|X70/,/버튼/,/철판|N\d/,/걸고리/,/부식|녹방지|J45|J55/,/스테인리스|S40|S50|G70/i,/황동|B20|B30|B40|B50/,/BIKE|자전거|NO-?90|C120/i,/줄자|m-?\d|미터/,/커플락|CL-?[234]/i,/절단석/,/마스터|KEY_/i,/TSA/i];const i=rules.findIndex(r=&gt;r.test(s));return i&lt;0?999:i}
 function renderOrders(){const map=orderMatrix(),q=(orderSearch.value||&#x27;&#x27;).toLowerCase();let rows=Object.entries(map).filter(([sku])=&gt;sku.toLowerCase().includes(q)).map(([sku,v])=&gt;{const vals=orderMonths.map(m=&gt;v[m]||0),total=vals.reduce((a,b)=&gt;a+b,0);return{sku,vals,total,avg:total/Math.max(orderMonths.length,1)}}).sort((a,b)=&gt;(skuRank(a.sku)-skuRank(b.sku))||(b.avg-a.avg)||a.sku.localeCompare(b.sku,&#x27;ko&#x27;));orderHead.innerHTML=`&lt;tr&gt;&lt;th&gt;SKU 이름&lt;/th&gt;&lt;th&gt;월평균 발주수량&lt;/th&gt;${orderMonths.map(m=&gt;`&lt;th&gt;${m} 발주&lt;/th&gt;`).join(&#x27;&#x27;)}&lt;th&gt;합계&lt;/th&gt;&lt;/tr&gt;`;orderBody.innerHTML=rows.length?rows.map(x=&gt;`&lt;tr&gt;&lt;td&gt;&lt;b&gt;${x.sku}&lt;/b&gt;&lt;/td&gt;&lt;td class=&quot;num avg&quot;&gt;${x.avg.toLocaleString(&#x27;ko-KR&#x27;,{maximumFractionDigits:1})}&lt;/td&gt;${x.vals.map(v=&gt;`&lt;td class=&quot;num&quot;&gt;${qty(v)}&lt;/td&gt;`).join(&#x27;&#x27;)}&lt;td class=&quot;num strong&quot;&gt;${qty(x.total)}&lt;/td&gt;&lt;/tr&gt;`).join(&#x27;&#x27;):&#x27;&lt;tr&gt;&lt;td class=&quot;empty&quot; colspan=&quot;9&quot;&gt;표시할 SKU가 없습니다.&lt;/td&gt;&lt;/tr&gt;&#x27;;oMonths.textContent=orderMonths.length+&#x27;개월&#x27;;oSku.textContent=qty(rows.length)+&#x27;개&#x27;;oQty.textContent=qty(rows.reduce((s,x)=&gt;s+x.total,0))+&#x27;개&#x27;;oAvg.textContent=qty(rows.reduce((s,x)=&gt;s+x.total,0)/Math.max(orderMonths.length,1))+&#x27;개&#x27;;orderFileNames.textContent=&#x27;적용월: &#x27;+orderMonths.join(&#x27;, &#x27;)}
 function monthLabel(name,fallback=&#x27;&#x27;){const m=String(name).match(/(\d{1,2})\s*월/);if(m)return Number(m[1])+&#x27;월&#x27;;const f=String(fallback).match(/(\d{1,2})\s*월/);if(f)return Number(f[1])+&#x27;월&#x27;;return String(name||fallback).replace(/\.(csv|xlsx?|xls)$/i,&#x27;&#x27;)}
 async function loadOrderFiles(){const fs=[...orderFiles.files];if(!fs.length)return alert(&#x27;월별 발주 CSV 또는 Excel 파일을 선택해 주세요.&#x27;);let applied=0;for(const f of fs){const wb=XLSX.read(await f.arrayBuffer(),{type:&#x27;array&#x27;});for(const sn of wb.SheetNames){const raw=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:&#x27;&#x27;}),hr=raw.findIndex(r=&gt;r.some(v=&gt;String(v).trim()===&#x27;SKU 이름&#x27;)&amp;&amp;r.some(v=&gt;String(v).trim()===&#x27;발주수량&#x27;));if(hr&lt;0)continue;const head=raw[hr].map(v=&gt;String(v).trim()),si=head.indexOf(&#x27;SKU 이름&#x27;),qi=head.indexOf(&#x27;발주수량&#x27;),label=monthLabel(sn, f.name);orderData=orderData.filter(x=&gt;x.month!==label);raw.slice(hr+1).forEach(r=&gt;{const sku=String(r[si]||&#x27;&#x27;).trim(),n=Number(String(r[qi]||0).replace(/,/g,&#x27;&#x27;))||0;if(sku)orderData.push({month:label,sku,qty:n})});if(!orderMonths.includes(label))orderMonths.push(label);applied++}}if(!applied)return alert(&#x27;SKU 이름·발주수량 열을 찾지 못했습니다.&#x27;);orderMonths.sort((a,b)=&gt;(parseInt(a)||99)-(parseInt(b)||99));orderRecordTitle.value=&#x27;쿠팡 발주 &#x27;+orderMonths.join(&#x27;·&#x27;);renderOrders()}
@@ -1572,7 +1583,7 @@ setInterval(()=>{
 },1200);
 </script>
 <script>
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=49-saved-order-edit').catch(()=>{}));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=50-cl4').catch(()=>{}));
 </script>
 </body>
 </html>
