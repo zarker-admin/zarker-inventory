@@ -689,7 +689,7 @@ tr.long td{background:inherit}
 &lt;/head&gt;
 &lt;body&gt;
 &lt;div class=&quot;wrap&quot;&gt;
-  &lt;h1&gt;중국발주 관리 &lt;span class=&quot;versionTag&quot;&gt;v28&lt;/span&gt;&lt;/h1&gt;
+  &lt;h1&gt;중국발주 관리 &lt;span class=&quot;versionTag&quot;&gt;v29&lt;/span&gt;&lt;/h1&gt;
   &lt;div class=&quot;sub&quot;&gt;매출 엑셀 + 재고 엑셀을 업로드해 월별 발주검토 기록을 생성하고 과거 기록을 계속 보관합니다.&lt;/div&gt;
 
   &lt;div class=&quot;card orderOnly&quot;&gt;
@@ -829,7 +829,10 @@ const forecastHead=document.getElementById(&#x27;forecastHead&#x27;),spareHead=d
 const tbody=document.getElementById(&#x27;tbody&#x27;),recordView=document.getElementById(&#x27;recordView&#x27;);
 const savedHistory=document.getElementById(&#x27;savedHistory&#x27;),recordDetail=document.getElementById(&#x27;recordDetail&#x27;);
 
+let localSaveTimer=null;
 function saveLocal(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){}}
+function scheduleLocalSave(delay=350){clearTimeout(localSaveTimer);localSaveTimer=setTimeout(()=&gt;{localSaveTimer=null;saveLocal()},delay)}
+function flushLocalSave(){clearTimeout(localSaveTimer);localSaveTimer=null;saveLocal()}
 saveLocal();
 function fmt(n){return Math.round(Number(n)||0).toLocaleString(&#x27;ko-KR&#x27;)}
 function norm(v){return String(v??&#x27;&#x27;).toUpperCase().replace(/[^0-9A-Z가-힣*]/g,&#x27;&#x27;)}
@@ -1042,8 +1045,8 @@ function startFresh(){
  salesFile.value=&#x27;&#x27;;stockFile.value=&#x27;&#x27;;salesName.textContent=&#x27;파일을 선택해 주세요.&#x27;;stockName.textContent=&#x27;파일을 선택해 주세요.&#x27;;
  saveLocal();render();alert(&#x27;초기화했습니다. 매출 파일과 재고 파일을 새로 선택해 주세요.&#x27;);
 }
-function editRow(i,k,v){let r=state.records[state.current].rows[i];r[k]=(k===&#x27;note&#x27;?v:numValue(v));saveLocal();renderKpi()}
-function formatOrderInput(el,i){const digits=String(el.value||&#x27;&#x27;).replace(/[^0-9]/g,&#x27;&#x27;);const n=digits?Number(digits):0;state.records[state.current].rows[i].orderQty=n;el.value=digits?n.toLocaleString(&#x27;ko-KR&#x27;):&#x27;&#x27;;renderKpi()}
+function editRow(i,k,v){let r=state.records[state.current].rows[i];r[k]=(k===&#x27;note&#x27;?v:numValue(v));scheduleLocalSave();renderKpi()}
+function formatOrderInput(el,i){const digits=String(el.value||&#x27;&#x27;).replace(/[^0-9]/g,&#x27;&#x27;);const n=digits?Number(digits):0;state.records[state.current].rows[i].orderQty=n;el.value=digits?n.toLocaleString(&#x27;ko-KR&#x27;):&#x27;&#x27;;scheduleLocalSave();renderKpi()}
 function commitOrderInput(el,i){const n=numValue(el.value);state.records[state.current].rows[i].orderQty=n;el.value=fmt(n);saveLocal();renderKpi()}
 function groupProductionBadge(group){
  if(group===&#x27;스테인리스&#x27;)return &#x27;&lt;span class=&quot;badge&quot;&gt;장기생산 6개월&lt;/span&gt;&#x27;;
@@ -1058,7 +1061,7 @@ function renderHistory(){
  box.innerHTML=`&lt;div class=&quot;recordPicker&quot;&gt;&lt;select id=&quot;savedSelect&quot; aria-label=&quot;발주기록 선택&quot; onchange=&quot;selectSaved(Number(this.value))&quot;&gt;${options}&lt;/select&gt;&lt;button class=&quot;btn active&quot; onclick=&quot;saveSavedEdits()&quot;&gt;수정 내용 저장&lt;/button&gt;&lt;button class=&quot;btn green&quot; onclick=&quot;exportSavedExcel()&quot;&gt;선택 기록 엑셀 다운로드&lt;/button&gt;&lt;button class=&quot;btn red&quot; onclick=&quot;deleteSaved()&quot;&gt;선택 기록 삭제&lt;/button&gt;&lt;span class=&quot;recordCount&quot;&gt;저장 기록 ${state.savedRecords.length}건&lt;/span&gt;&lt;/div&gt;`;
 }
 function selectSaved(i){state.savedCurrent=i;saveLocal();renderRecordView()}
-function editSavedRow(i,k,v){const rec=state.savedRecords[state.savedCurrent];if(!rec||!rec.rows[i])return;rec.rows[i][k]=k===&#x27;orderQty&#x27;?numValue(v):v}
+function editSavedRow(i,k,v){const rec=state.savedRecords[state.savedCurrent];if(!rec||!rec.rows[i])return;rec.rows[i][k]=k===&#x27;orderQty&#x27;?numValue(v):v;scheduleLocalSave()}
 function formatSavedOrderInput(el,i){const digits=String(el.value||&#x27;&#x27;).replace(/[^0-9]/g,&#x27;&#x27;);el.value=digits?Number(digits).toLocaleString(&#x27;ko-KR&#x27;):&#x27;&#x27;;editSavedRow(i,&#x27;orderQty&#x27;,digits?Number(digits):0)}
 function savedNoteColor(r){return /^#[0-9a-f]{6}$/i.test(String(r.noteColor||&#x27;&#x27;))?r.noteColor:&#x27;#111827&#x27;}
 let activeSavedNoteIndex=-1;
@@ -1066,11 +1069,18 @@ function savedNoteEditor(r,i){const color=savedNoteColor(r),bold=!!r.noteBold;re
 function selectSavedNote(i){activeSavedNoteIndex=i;const rec=state.savedRecords[state.savedCurrent],r=rec&amp;&amp;rec.rows[i],boldBtn=document.getElementById(&#x27;savedBoldBtn&#x27;),colorBtn=document.getElementById(&#x27;savedColorBtn&#x27;);if(!r)return;if(boldBtn)boldBtn.classList.toggle(&#x27;active&#x27;,!!r.noteBold);if(colorBtn)colorBtn.style.setProperty(&#x27;--note-color&#x27;,savedNoteColor(r))}
 function requireSavedNote(){const rec=state.savedRecords[state.savedCurrent],r=rec&amp;&amp;rec.rows[activeSavedNoteIndex];if(!r){alert(&#x27;먼저 수정할 비고란을 클릭해 주세요.&#x27;);return null}return r}
 function syncSavedNoteStyle(i,r){document.querySelectorAll(`.savedNoteEdit[data-note-index=&quot;${i}&quot;]`).forEach(note=&gt;{note.style.fontWeight=r.noteBold?&#x27;800&#x27;:&#x27;400&#x27;;note.style.color=savedNoteColor(r)});selectSavedNote(i)}
-function toggleSavedNoteBold(){const r=requireSavedNote();if(!r)return;r.noteBold=!r.noteBold;syncSavedNoteStyle(activeSavedNoteIndex,r)}
+function toggleSavedNoteBold(){const r=requireSavedNote();if(!r)return;r.noteBold=!r.noteBold;syncSavedNoteStyle(activeSavedNoteIndex,r);scheduleLocalSave()}
 function toggleSavedColorPalette(){document.getElementById(&#x27;savedColorPalette&#x27;)?.classList.toggle(&#x27;open&#x27;)}
-function applySavedNoteColor(color){const r=requireSavedNote();if(!r)return;r.noteColor=color;syncSavedNoteStyle(activeSavedNoteIndex,r);document.getElementById(&#x27;savedColorPalette&#x27;)?.classList.remove(&#x27;open&#x27;)}
-function saveSavedEdits(){const rec=state.savedRecords[state.savedCurrent];if(!rec)return;rec.updatedAt=new Date().toISOString();saveLocal();renderRecordView();alert(&#x27;발주수량과 비고 수정 내용을 저장했습니다.&#x27;)}
-function exportSavedExcel(){
+function applySavedNoteColor(color){const r=requireSavedNote();if(!r)return;r.noteColor=color;syncSavedNoteStyle(activeSavedNoteIndex,r);scheduleLocalSave();document.getElementById(&#x27;savedColorPalette&#x27;)?.classList.remove(&#x27;open&#x27;)}
+function saveSavedEdits(){const rec=state.savedRecords[state.savedCurrent];if(!rec)return;rec.updatedAt=new Date().toISOString();flushLocalSave();renderRecordView();alert(&#x27;발주수량과 비고 수정 내용을 저장했습니다. 다른 컴퓨터에서도 확인할 수 있도록 동기화를 시작했습니다.&#x27;)}
+function setTemplateCell(ws,address,value,styleSource){
+ const old=ws[address]||{},src=styleSource&amp;&amp;ws[styleSource]||{};
+ const cell={...old};delete cell.w;delete cell.f;delete cell.F;
+ if(cell.s==null&amp;&amp;src.s!=null)cell.s=src.s;if(cell.z==null&amp;&amp;src.z!=null)cell.z=src.z;
+ if(typeof value===&#x27;number&#x27;&amp;&amp;Number.isFinite(value)){cell.t=&#x27;n&#x27;;cell.v=value}else{cell.t=&#x27;s&#x27;;cell.v=String(value??&#x27;&#x27;)}
+ ws[address]=cell;
+}
+async function exportSavedExcel(){
  const rec=state.savedRecords[state.savedCurrent];if(!rec)return alert(&#x27;다운로드할 발주기록을 선택해 주세요.&#x27;);
  if(typeof XLSX===&#x27;undefined&#x27;)return alert(&#x27;엑셀 기능을 불러오지 못했습니다. 인터넷 연결 후 다시 열어 주세요.&#x27;);
  const data=[
@@ -1079,14 +1089,18 @@ function exportSavedExcel(){
    [&#x27;저장 일시&#x27;,rec.savedAt?new Date(rec.savedAt).toLocaleString(&#x27;ko-KR&#x27;):&#x27;-&#x27;],
    [],[&#x27;구분&#x27;,&#x27;제품/규격&#x27;,&#x27;판매량&#x27;,&#x27;월평균 판매량&#x27;,&#x27;현재고&#x27;,(rec.forecastMonth||&#x27;-&#x27;)+&#x27; 예상재고&#x27;,(rec.spareMonth||&#x27;-&#x27;)+&#x27; 기준 여유개월수&#x27;,&#x27;발주수량&#x27;,&#x27;비고&#x27;]
  ];
- rec.rows.forEach(r=&gt;{const c=calc(r,rec);data.push([r.group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,numValue(r.orderQty),r.note||&#x27;&#x27;])});
- const ws=XLSX.utils.aoa_to_sheet(data);
- ws[&#x27;!merges&#x27;]=[XLSX.utils.decode_range(&#x27;A1:I1&#x27;)];
- ws[&#x27;!cols&#x27;]=[{wch:16},{wch:28},{wch:13},{wch:16},{wch:13},{wch:13},{wch:12},{wch:13},{wch:38}];
- ws[&#x27;!autofilter&#x27;]={ref:&#x27;A8:I&#x27;+data.length};
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,&#x27;중국발주 기록&#x27;);
- const safe=String(rec.title||&#x27;중국발주기록&#x27;).replace(/[^0-9A-Za-z가-힣._-]+/g,&#x27;_&#x27;);
- XLSX.writeFile(wb,safe+&#x27;.xlsx&#x27;);
+ let lastGroup=&#x27;&#x27;;rec.rows.forEach(r=&gt;{const c=calc(r,rec),group=r.group===lastGroup?&#x27;&#x27;:r.group;lastGroup=r.group;data.push([group,r.name,Number(r.sales)||0,Math.round(c.avg),Number(r.stock)||0,Math.round(c.forecast),c.avg?Math.round(c.spare):&#x27;-&#x27;,numValue(r.orderQty),r.note||&#x27;&#x27;])});
+ try{
+  const response=await fetch(&#x27;./china-order-template.xlsx?v=1&#x27;,{cache:&#x27;no-store&#x27;});if(!response.ok)throw new Error(&#x27;template&#x27;);
+  const wb=XLSX.read(await response.arrayBuffer(),{type:&#x27;array&#x27;,cellStyles:true,bookFiles:true}),ws=wb.Sheets[wb.SheetNames[0]],templateEnd=XLSX.utils.decode_range(ws[&#x27;!ref&#x27;]||&#x27;A1:I124&#x27;).e.r+1;
+  for(let row=1;row&lt;=Math.max(templateEnd,data.length);row++)for(let col=0;col&lt;9;col++){const a=XLSX.utils.encode_cell({r:row-1,c:col}),cell=ws[a];if(cell){delete cell.v;delete cell.w;delete cell.f;delete cell.F;delete cell.t}}
+  data.forEach((row,ri)=&gt;row.forEach((value,ci)=&gt;{const address=XLSX.utils.encode_cell({r:ri,c:ci}),styleRow=Math.min(Math.max(ri+1,9),templateEnd),styleSource=XLSX.utils.encode_cell({r:styleRow-1,c:ci});setTemplateCell(ws,address,value,styleSource)}));
+  const endRow=data.length;ws[&#x27;!ref&#x27;]=&#x27;A1:I&#x27;+endRow;ws[&#x27;!autofilter&#x27;]={ref:&#x27;A8:I&#x27;+endRow};ws[&#x27;!merges&#x27;]=[XLSX.utils.decode_range(&#x27;A1:I1&#x27;)];
+  let blockStart=9,blockGroup=rec.rows[0]?.group||&#x27;&#x27;;
+  for(let i=1;i&lt;=rec.rows.length;i++){const g=rec.rows[i]?.group||&#x27;&#x27;;if(i===rec.rows.length||g!==blockGroup){const from=blockStart,to=8+i;if(to&gt;from)ws[&#x27;!merges&#x27;].push(XLSX.utils.decode_range(`A${from}:A${to}`));if(blockGroup===&#x27;커플락&#x27;&amp;&amp;to&gt;from)ws[&#x27;!merges&#x27;].push(XLSX.utils.decode_range(`I${from}:I${to}`));blockStart=9+i;blockGroup=g}}
+  const safe=String(rec.title||&#x27;중국발주기록&#x27;).replace(/[^0-9A-Za-z가-힣._-]+/g,&#x27;_&#x27;);
+  XLSX.writeFile(wb,safe+&#x27;.xlsx&#x27;,{cellStyles:true,compression:true});
+ }catch(e){console.error(e);alert(&#x27;엑셀 양식 파일을 불러오지 못했습니다. index.html, service-worker.js, china-order-template.xlsx 세 파일을 함께 업로드해 주세요.&#x27;)}
 }
 function deleteSaved(){
  const i=state.savedCurrent,rec=state.savedRecords[i];if(!rec)return;
@@ -1538,18 +1552,12 @@ const CLOUD_ITEMS=[
  {id:'amazon-reports',key:'zarker_amazon_monthly_reports_v1'}
 ];
 const gate=document.getElementById('loginGate'),splash=document.getElementById('authSplash'),form=document.getElementById('loginForm'),status=document.getElementById('loginStatus'),account=document.getElementById('cloudAccount');
-let ready=false,applying=false,lastValues={},unsubs=[],saveTimers={};
+let ready=false,applying=false,lastValues={},unsubs=[],saveTimers={},savingKeys={},pendingValues={};
 const localValue=key=>localStorage.getItem(key)||'';
-let cloudReloadTimer=null;
 function cloudEditorActive(){
  const docs=[document];
  document.querySelectorAll('iframe').forEach(f=>{try{if(f.contentDocument)docs.push(f.contentDocument)}catch(e){}});
  return docs.some(d=>{const el=d.activeElement;if(!el)return false;return el.matches?.('input,textarea,select,[contenteditable="true"]')||!!el.closest?.('[contenteditable="true"]')});
-}
-function scheduleCloudReload(){
- clearTimeout(cloudReloadTimer);
- const tryReload=()=>{if(cloudEditorActive()){cloudReloadTimer=setTimeout(tryReload,2500);return}location.reload()};
- cloudReloadTimer=setTimeout(tryReload,1200);
 }
 const friendlyError=e=>{
  const c=String(e&&e.code||'');
@@ -1582,7 +1590,8 @@ async function startCloud(user){
    if(!ready||applying||!snap.exists())return;
    const cloud=String(snap.data().payload||''),local=localValue(item.key);
    if(cloud===local){lastValues[item.key]=cloud;return}
-   applying=true;if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);lastValues[item.key]=cloud;applying=false;scheduleCloudReload();
+   if(savingKeys[item.key]||pendingValues[item.key]!=null||local!==String(lastValues[item.key]??''))return;
+   applying=true;if(cloud)localStorage.setItem(item.key,cloud);else localStorage.removeItem(item.key);lastValues[item.key]=cloud;applying=false;
   }));
  });
  if(changed&&!sessionStorage.getItem('zarker_cloud_reloaded')){sessionStorage.setItem('zarker_cloud_reloaded','1');location.reload();return}
@@ -1591,17 +1600,24 @@ async function startCloud(user){
 async function stopCloud(){ready=false;unsubs.forEach(f=>f());unsubs=[];account.hidden=true;splash.classList.add('hidden');gate.classList.remove('hidden');status.textContent='';document.getElementById('loginPassword').value=''}
 onAuthStateChanged(auth,user=>{if(user)startCloud(user).catch(e=>{console.error(e);status.className='loginStatus';status.textContent='클라우드 연결에 실패했습니다. 잠시 후 새로고침해 주세요.'});else stopCloud()});
 
+async function flushCloudItem(item){
+ const key=item.key;if(!ready||applying||!auth.currentUser||savingKeys[key])return;
+ const value=localValue(key);if(value===String(lastValues[key]??''))return;
+ savingKeys[key]=true;pendingValues[key]=value;
+ try{await setDoc(doc(db,'zarkerShared',item.id),{payload:value,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.email||''});lastValues[key]=value}
+ catch(e){console.error('cloud save',e)}
+ finally{delete pendingValues[key];savingKeys[key]=false;if(localValue(key)!==String(lastValues[key]??'')){clearTimeout(saveTimers[key]);saveTimers[key]=setTimeout(()=>flushCloudItem(item),250)}}
+}
 setInterval(()=>{
  if(!ready||applying||!auth.currentUser)return;
  CLOUD_ITEMS.forEach(item=>{
-  const value=localValue(item.key);if(value===lastValues[item.key])return;
-  lastValues[item.key]=value;clearTimeout(saveTimers[item.key]);
-  saveTimers[item.key]=setTimeout(async()=>{try{await setDoc(doc(db,'zarkerShared',item.id),{payload:value,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.email||''})}catch(e){console.error('cloud save',e)}},700);
+  const value=localValue(item.key);if(value===String(lastValues[item.key]??'')||value===pendingValues[item.key])return;
+  clearTimeout(saveTimers[item.key]);saveTimers[item.key]=setTimeout(()=>flushCloudItem(item),700);
  });
 },1200);
 </script>
 <script>
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=54-china-note-toolbar').catch(()=>{}));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=55-china-export-sync').catch(()=>{}));
 </script>
 </body>
 </html>
