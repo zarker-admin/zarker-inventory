@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v56-inventory-pack-validation';
+const CACHE_NAME='zarker-work-v58-amazon-year-total-fix';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
