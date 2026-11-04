@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v58-amazon-year-total-fix';
+const CACHE_NAME='zarker-work-v59-amazon-tooltip';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
