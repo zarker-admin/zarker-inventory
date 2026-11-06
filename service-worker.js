@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v60-excel-exports';
+const CACHE_NAME='zarker-work-v63-schedule-print-header-auto-open';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
