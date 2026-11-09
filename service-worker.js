@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v63-schedule-print-header-auto-open';
+const CACHE_NAME='zarker-work-v64-amazon-year-click-amounts';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
