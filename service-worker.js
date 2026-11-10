@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v64-amazon-year-click-amounts';
+const CACHE_NAME='zarker-work-v66-coupang-product-yoy-cumulative';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
