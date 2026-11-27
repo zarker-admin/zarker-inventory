@@ -1558,7 +1558,46 @@ function buildAmazonQuantityData(items,endMonth,baseYear){
  const rows=keys.map(k=>{const [cat,spec]=k.split('|||'),months=Array.from({length:last},(_,i)=>items.filter(x=>x.year===current&&x.month===i+1&&key(x)===k).reduce((s,x)=>s+amazonNum(x.qty),0)),currentTotal=months.reduce((s,x)=>s+x,0),previousTotal=items.filter(x=>x.year===previous&&x.month<=last&&key(x)===k).reduce((s,x)=>s+amazonNum(x.qty),0),diff=currentTotal-previousTotal,rate=previousTotal?currentTotal/previousTotal-1:null;return{cat,spec,months,currentTotal,previousTotal,diff,rate}}).filter(x=>x.currentTotal||x.previousTotal).sort((a,b)=>a.cat.localeCompare(b.cat,'ko')||b.currentTotal-a.currentTotal||a.spec.localeCompare(b.spec,'ko'));
  const currentTotal=rows.reduce((s,x)=>s+x.currentTotal,0),previousTotal=rows.reduce((s,x)=>s+x.previousTotal,0);return{rows,currentTotal,previousTotal,diff:currentTotal-previousTotal,rate:previousTotal?currentTotal/previousTotal-1:null,_meta:{current,previous,endMonth:last,periodText:'1~'+last+'월'}};
 }
-function renderAmazonData(data,title,fileName){
+function amazonFullYearAmounts(items,current){
+ const out={};
+ for(const {year,month,amount} of items){
+  if(year<2021||year>current||month<1||month>12||!Number.isFinite(amount))continue;
+  const row=out[year]??=Array(12).fill(null);
+  row[month-1]=(row[month-1]??0)+amount;
+ }
+ return out;
+}
+function attachAmazonAmounts(amounts){
+ const legend=document.getElementById('historyLegend');
+ const button=document.createElement('button');
+ button.type='button';button.textContent='매출 금액 보기';button.className='amount-open';
+ legend.after(button);
+ const modal=document.createElement('dialog');
+ modal.className='amount-dialog';modal.setAttribute('aria-labelledby','amount-title');
+ modal.innerHTML='<header><h2 id="amount-title"></h2><form method="dialog"><button>닫기</button></form></header><div class="amount-modes"><button type="button">월별 매출</button> <button type="button">누적 매출</button></div><p>단위: 원 · 자료가 없는 달은 빈칸</p><div class="amount-scroll"><table></table></div>';
+ document.body.append(modal);
+ const [monthly,cumulative]=modal.querySelectorAll('.amount-modes button');
+ function draw(cum){
+  const years=historySelected==null?Object.keys(amounts):[historySelected];
+  modal.querySelector('h2').textContent=(historySelected==null?'전체 연도':historySelected+'년')+' 매출 금액';
+  monthly.setAttribute('aria-pressed',String(!cum));cumulative.setAttribute('aria-pressed',String(cum));
+  const head=Array.from({length:12},(_,i)=>'<th scope="col">'+(i+1)+'월</th>').join('');
+  const fmt=n=>n.toLocaleString('ko-KR');
+  const rows=years.map(year=>{
+   let total=0,available=false;
+   const cells=(amounts[year]||Array(12).fill(null)).map(v=>{
+    if(v===null)return '<td></td>';
+    available=true;total+=v;
+    return '<td>'+fmt(cum?total:v)+'</td>';
+   }).join('');
+   return '<tr><th scope="row">'+year+'년</th>'+cells+'<td><strong>'+(available?fmt(total):'')+'</strong></td></tr>';
+  }).join('');
+  modal.querySelector('table').innerHTML='<thead><tr><th scope="col">연도</th>'+head+'<th scope="col">합계</th></tr></thead><tbody>'+rows+'</tbody>';
+ }
+ button.onclick=()=>{draw(false);modal.querySelector('.amount-scroll').scrollLeft=0;modal.showModal()};
+ monthly.onclick=()=>draw(false);cumulative.onclick=()=>draw(true);
+}
+function renderAmazonData(data,title,fileName,kind='cumulative'){
  const m=data._meta,period=m.periodText||(m.maxMonth+'월'),peak=[...data.history].sort((a,b)=>b.value-a.value)[0];let html=AMAZON_TEMPLATE.replace(/2025/g,String(m.previous)).replace(/2026/g,String(m.current)).replace(/1~7월/g,period).replace(/1~7/g,period).replace('2022년 최고 매출',peak.year+'년 최고 매출');
  html=html.replace(/const D=.*?;const won=/s,'const D='+JSON.stringify(data)+';const won=');
  html=html.replace(/<header class=\"hero\">([\s\S]*?<h1>[\s\S]*?<\/h1>)<p>[\s\S]*?<\/p><div class=\"basis\">[\s\S]*?<\/div>/,'<header class=\"hero\">$1<p>'+data.history[0].year+'년부터 모든 연도를 동일한 '+period+' 누계로 비교했습니다.</p><div class=\"basis\">금액 단위: 원화 · '+data.history[0].year+'~'+m.current+'년 모두 '+period+' 동일 기간 누계 · 원자료 최종일 '+m.lastDate+'</div>');
@@ -1573,7 +1612,14 @@ function renderAmazonData(data,title,fileName){
  html=html.replace('${won(D.diff)} 증가했습니다.','${won(D.diff)} ${D.diff<0?\"감소\":\"증가\"}했습니다.');
  html=html.replace('<b>${won(D.diff)}(+${pct(D.rate)})</b> 증가했습니다.','<b>${won(D.diff)}(${D.rate<0?\"\":\"+\"}${pct(D.rate)})</b> ${D.diff<0?\"감소\":\"증가\"}했습니다.');
  html=html.replace('x=i=>p.l+i*(W-p.l-p.r)/(arr.length-1)','x=i=>p.l+(arr.length===1?(W-p.l-p.r)/2:i*(W-p.l-p.r)/(arr.length-1))');
- html=html.replace(/<h1>.*?<\/h1>/,'<h1>'+escapeOuter(title)+'</h1>').replace(/자료:.*?· 작성 \d{4}-\d{2}-\d{2}/,'자료: '+escapeOuter(fileName)+' · 작성 '+new Date().toISOString().slice(0,10));amazonFrame.srcdoc=html;
+ html=html.replace(/<h1>.*?<\/h1>/,'<h1>'+escapeOuter(title)+'</h1>').replace(/자료:.*?· 작성 \d{4}-\d{2}-\d{2}/,'자료: '+escapeOuter(fileName)+' · 작성 '+new Date().toISOString().slice(0,10));
+ if(kind==='cumulative'){
+  const css='.amount-dialog{width:min(1240px,96vw);max-height:85vh;border:0;border-radius:16px;padding:20px;color:#10213b}.amount-dialog::backdrop{background:#10213b66}.amount-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.amount-open,.amount-dialog button{cursor:pointer;border:1px solid #b5cbed;border-radius:8px;padding:8px 12px;background:#eef4ff;color:#173f91;font-weight:700}.amount-dialog button[aria-pressed=true]{background:#173f91;color:white}.amount-scroll{overflow:auto}.amount-scroll table{min-width:1050px}.amount-scroll th,.amount-scroll td{white-space:nowrap;padding:8px;text-align:right}.amount-scroll tbody th{position:sticky;left:0;background:#fff}';
+  html=html.replace('</style>',css+'</style>');
+  const close='<'+ '/script>',at=html.lastIndexOf(close);
+  if(at>=0)html=html.slice(0,at)+'\n;('+attachAmazonAmounts.toString()+')('+JSON.stringify(amazonFullYearAmounts(readAmazonMaster(),m.current))+');\n'+html.slice(at);
+ }
+ amazonFrame.srcdoc=html;
 }
 function renderAmazonQuantity(data,title){
  const m=data._meta,n=v=>Number(v||0).toLocaleString('ko-KR'),rate=v=>v==null?'비교 불가':(v>=0?'+':'')+(v*100).toFixed(1)+'%',months=Array.from({length:m.endMonth},(_,i)=>i+1),rows=data.rows.map(x=>'<tr><td>'+escapeOuter(x.cat)+'</td><td class="spec">'+escapeOuter(x.spec)+'</td>'+x.months.map(v=>'<td>'+n(v)+'</td>').join('')+'<td class="total">'+n(x.currentTotal)+'</td><td class="rate '+(x.diff<0?'bad':'good')+'" title="'+m.previous+'년 '+n(x.previousTotal)+'개 → '+m.current+'년 '+n(x.currentTotal)+'개 · '+(x.diff>=0?'+':'')+n(x.diff)+'개">'+rate(x.rate)+'</td></tr>').join('');
@@ -1582,14 +1628,14 @@ function renderAmazonQuantity(data,title){
 function amazonBundleData(bundle,kind){if(bundle&&bundle.cumulative)return bundle[kind]||bundle.cumulative;return bundle}
 function exportAmazonQuantity(d,title){if(!d)return alert('다운로드할 월별 누적 수량이 없습니다.');const m=d._meta,rows=d.rows.map(x=>{const r={품목:x.cat,'제품 규격':x.spec};x.months.forEach((v,i)=>r[(i+1)+'월 수량']=v);r[m.current+'년 누적수량']=x.currentTotal;r[m.previous+'년 누적수량']=x.previousTotal;r['증감수량']=x.diff;r['증감률']=x.rate==null?'':x.rate;return r}),ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();ws['!cols']=Object.keys(rows[0]||{}).map((k,i)=>({wch:i===1?28:14}));XLSX.utils.book_append_sheet(wb,ws,'월별 누적 수량');XLSX.writeFile(wb,(title||'아마존 월보고').replace(/[\\/:*?"<>|]/g,'_')+'_월별누적수량.xlsx',{compression:true})}
 function exportAmazonExcel(d,title,kind){if(!d)return alert('다운로드할 아마존 월보고 데이터가 없습니다.');if(typeof XLSX==='undefined')return alert('엑셀 기능을 불러오지 못했습니다. 인터넷 연결 후 다시 시도해 주세요.');const meta=d._meta||{},period=meta.periodText||'',summary=[{구분:kind==='cumulative'?'기간 누적':'해당 월',비교기간:period,기준연도:meta.current||'',전년:meta.previous||'',전년매출:Number(d.total25)||0,기준연도매출:Number(d.total26)||0,증감액:Number(d.diff)||0,증감률:d.rate==null?'':Number(d.rate)}],history=(d.history||[]).map(x=>({연도:Number(x.year),기간누적매출:Number(x.value)||0,전년대비증감률:x.delta==null?'':Number(x.delta)})),months=(d.months||[]).map(x=>({월:Number(x.m),전년매출:Number(x.y25)||0,기준연도매출:Number(x.y26)||0,증감액:Number(x.diff)||0})),categories=(d.categories||[]).map(x=>({품목:x.name,전년매출:Number(x.y25)||0,기준연도매출:Number(x.y26)||0,증감액:Number(x.diff)||0,증감률:x.rate==null?'':Number(x.rate)})),growth=(d.growth||[]).map(x=>({품목:x.cat,제품:x.name,전년매출:Number(x.y25)||0,기준연도매출:Number(x.y26)||0,증감액:Number(x.diff)||0,증감률:x.rate==null?'':Number(x.rate)})),declines=(d.declines||[]).map(x=>({품목:x.cat,제품:x.name,전년매출:Number(x.y25)||0,기준연도매출:Number(x.y26)||0,증감액:Number(x.diff)||0,증감률:x.rate==null?'':Number(x.rate)})),wb=XLSX.utils.book_new(),add=(name,rows)=>{const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=rows.length?Object.keys(rows[0]).map(k=>({wch:Math.max(13,Math.min(28,k.length+7))})):[];XLSX.utils.book_append_sheet(wb,ws,name)};add('요약',summary);add('연도별 누적',history);add('월별 비교',months);add('품목별',categories);add('증가 제품',growth);add('감소 제품',declines);const safe=(title||'아마존 월보고').replace(/[\\/:*?"<>|]/g,'_'),label=kind==='cumulative'?'기간누적':'해당월';XLSX.writeFile(wb,safe+'_'+label+'.xlsx',{compression:true})}
-function showAmazonResult(kind){if(!amazonCurrentData)return;amazonCurrentView=kind;const title=document.getElementById('amazonReportTitle').value.trim()||'아마존 월보고';if(kind==='quantity')renderAmazonQuantity(amazonBundleData(amazonCurrentData,kind),title);else renderAmazonData(amazonBundleData(amazonCurrentData,kind),title,amazonCurrentFile);document.getElementById('amazonShowCumulative').className='amazonAction '+(kind==='cumulative'?'activeView':'light');document.getElementById('amazonShowMonthly').className='amazonAction '+(kind==='monthly'?'activeView':'light');document.getElementById('amazonShowQuantity').className='amazonAction '+(kind==='quantity'?'activeView':'light')}
+function showAmazonResult(kind){if(!amazonCurrentData)return;amazonCurrentView=kind;const title=document.getElementById('amazonReportTitle').value.trim()||'아마존 월보고';if(kind==='quantity')renderAmazonQuantity(amazonBundleData(amazonCurrentData,kind),title);else renderAmazonData(amazonBundleData(amazonCurrentData,kind),title,amazonCurrentFile,kind);document.getElementById('amazonShowCumulative').className='amazonAction '+(kind==='cumulative'?'activeView':'light');document.getElementById('amazonShowMonthly').className='amazonAction '+(kind==='monthly'?'activeView':'light');document.getElementById('amazonShowQuantity').className='amazonAction '+(kind==='quantity'?'activeView':'light')}
 function escapeOuter(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function saveAmazonRecords(){try{localStorage.setItem(AMAZON_STORE,JSON.stringify(amazonRecords))}catch(e){alert('월보고 기록 저장 공간을 사용할 수 없습니다.')}}
 function renderAmazonRecords(){
  const box=document.getElementById('amazonRecordPicker');if(!amazonRecords.length){box.innerHTML='<div class="amazonEmpty">저장된 아마존 월보고가 없습니다.</div>';return}
  const options=amazonRecords.map((r,i)=>({r,i})).sort((a,b)=>new Date(b.r.savedAt||0)-new Date(a.r.savedAt||0)).map(x=>'<option value="'+x.i+'">'+escapeOuter(x.r.title)+' · '+new Date(x.r.savedAt).toLocaleDateString('ko-KR')+'</option>').join('');
  box.innerHTML='<div class="amazonField"><label>저장된 월보고 선택</label><select id="amazonRecordSelect">'+options+'</select></div><button id="amazonOpenCumulative" class="amazonAction" type="button">기간 누적 보기</button><button id="amazonOpenMonthly" class="amazonAction light" type="button">해당 월 보기</button><button id="amazonOpenQuantity" class="amazonAction light" type="button">월별 누적 수량</button><button id="amazonExportCumulative" class="amazonAction gray" type="button">기간 누적 Excel</button><button id="amazonExportMonthly" class="amazonAction gray" type="button">해당 월 Excel</button><button id="amazonExportQuantity" class="amazonAction gray" type="button">수량 Excel</button><button id="amazonDeleteRecord" class="amazonAction red" type="button">선택 기록 삭제</button><span class="amazonRecordMeta">저장 기록 '+amazonRecords.length+'건</span>';
- const sel=document.getElementById('amazonRecordSelect'),selected=()=>amazonRecords[Number(sel.value)],quantityFor=r=>(r.data&&r.data.quantity)||buildAmazonQuantityData(readAmazonMaster(),r.data.cumulative._meta.endMonth,r.data.cumulative._meta.current),open=k=>{const r=selected();if(!r)return;if(k==='quantity')renderAmazonQuantity(quantityFor(r),r.title);else renderAmazonData(amazonBundleData(r.data,k),r.title,r.fileName)},exportRecord=k=>{const r=selected();if(!r)return;if(k==='quantity')exportAmazonQuantity(quantityFor(r),r.title);else exportAmazonExcel(amazonBundleData(r.data,k),r.title,k)};document.getElementById('amazonOpenCumulative').addEventListener('click',()=>open('cumulative'));document.getElementById('amazonOpenMonthly').addEventListener('click',()=>open('monthly'));document.getElementById('amazonOpenQuantity').addEventListener('click',()=>open('quantity'));document.getElementById('amazonExportCumulative').addEventListener('click',()=>exportRecord('cumulative'));document.getElementById('amazonExportMonthly').addEventListener('click',()=>exportRecord('monthly'));document.getElementById('amazonExportQuantity').addEventListener('click',()=>exportRecord('quantity'));document.getElementById('amazonDeleteRecord').addEventListener('click',()=>{const i=Number(sel.value),r=amazonRecords[i];if(!r||!confirm(r.title+' 기록을 삭제할까요?'))return;amazonRecords.splice(i,1);saveAmazonRecords();renderAmazonRecords();alert('선택한 월보고를 삭제했습니다.')});
+ const sel=document.getElementById('amazonRecordSelect'),selected=()=>amazonRecords[Number(sel.value)],quantityFor=r=>(r.data&&r.data.quantity)||buildAmazonQuantityData(readAmazonMaster(),r.data.cumulative._meta.endMonth,r.data.cumulative._meta.current),open=k=>{const r=selected();if(!r)return;if(k==='quantity')renderAmazonQuantity(quantityFor(r),r.title);else renderAmazonData(amazonBundleData(r.data,k),r.title,r.fileName,k)},exportRecord=k=>{const r=selected();if(!r)return;if(k==='quantity')exportAmazonQuantity(quantityFor(r),r.title);else exportAmazonExcel(amazonBundleData(r.data,k),r.title,k)};document.getElementById('amazonOpenCumulative').addEventListener('click',()=>open('cumulative'));document.getElementById('amazonOpenMonthly').addEventListener('click',()=>open('monthly'));document.getElementById('amazonOpenQuantity').addEventListener('click',()=>open('quantity'));document.getElementById('amazonExportCumulative').addEventListener('click',()=>exportRecord('cumulative'));document.getElementById('amazonExportMonthly').addEventListener('click',()=>exportRecord('monthly'));document.getElementById('amazonExportQuantity').addEventListener('click',()=>exportRecord('quantity'));document.getElementById('amazonDeleteRecord').addEventListener('click',()=>{const i=Number(sel.value),r=amazonRecords[i];if(!r||!confirm(r.title+' 기록을 삭제할까요?'))return;amazonRecords.splice(i,1);saveAmazonRecords();renderAmazonRecords();alert('선택한 월보고를 삭제했습니다.')});
  const latest=amazonRecords[amazonRecords.length-1];if(latest)renderAmazonData(amazonBundleData(latest.data,'cumulative'),latest.title,latest.fileName);
 }
 document.getElementById('amazonAnalyzeBtn').addEventListener('click',async()=>{const f=document.getElementById('amazonFile').files[0],status=document.getElementById('amazonWriteStatus');let year=Number(document.getElementById('amazonBaseYear').value),start=Number(document.getElementById('amazonStartMonth').value),end=Number(document.getElementById('amazonEndMonth').value),month=Number(document.getElementById('amazonCompareMonth').value);if(!f)return alert('아마존 매출 Excel을 선택해 주세요.');if(typeof XLSX==='undefined')return alert('Excel 기능을 불러오지 못했습니다.');status.textContent='이번 달 자료를 기존 누적 자료와 합치는 중...';try{const rows=await readAmazonExcel(f),uploaded=parseAmazonRows(rows),latestYear=Math.max(...uploaded.map(x=>x.year)),latestMonth=Math.max(...uploaded.filter(x=>x.year===latestYear).map(x=>x.month));year=latestYear;end=latestMonth;month=latestMonth;document.getElementById('amazonBaseYear').value=year;document.getElementById('amazonEndMonth').value=end;document.getElementById('amazonCompareMonth').value=month;const items=mergeAmazonMaster(uploaded);amazonCurrentData={cumulative:analyzeAmazonItems(items,start,end,year),monthly:analyzeAmazonItems(items,month,month,year),quantity:buildAmazonQuantityData(items,end,year)};amazonCurrentFile=f.name;document.getElementById('amazonViewSwitch').classList.remove('hidden');showAmazonResult('cumulative');const m=amazonCurrentData.cumulative._meta,months=[...new Set(uploaded.map(x=>x.year+'년 '+x.month+'월'))].join(', ');status.textContent=months+' 자료를 기존 자료에 반영했습니다. '+m.previous+'년 대비 '+m.current+'년 '+m.periodText+' 누적 비교·'+month+'월 비교·월별 누적 수량을 볼 수 있습니다.'}catch(e){status.textContent='분석 실패';alert('아마존 월보고 분석 실패: '+e.message)}});
@@ -1694,7 +1740,7 @@ setInterval(()=>{
 },1200);
 </script>
 <script>
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=68-amazon-quantity-sticky-header').catch(()=>{}));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=69-amazon-full-year-amounts').catch(()=>{}));
 </script>
 </body>
 </html>
