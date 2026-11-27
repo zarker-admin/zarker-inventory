@@ -1,4 +1,4 @@
-const CACHE_NAME='zarker-work-v69-amazon-full-year-amounts';
+const CACHE_NAME='zarker-work-v70-amazon-sales-button-layout';
 const APP_SHELL=['./','./index.html','./manifest.webmanifest','./china-order-template.xlsx'];
 
 self.addEventListener('install',event=>{
